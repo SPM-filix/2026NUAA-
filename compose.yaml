@@ -1,0 +1,58 @@
+name: nuaa-recycle
+
+# 本地与服务器共用同一套环境。
+# 应用连接数据库时使用服务名 db，任何配置里都不要写 localhost。
+services:
+  db:
+    image: mysql:8.0
+    container_name: nuaa-recycle-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置 MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-recycle}
+      MYSQL_USER: ${DB_USER:-recycle}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?请在 .env 中设置 DB_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    ports:
+      # 仅绑定宿主机回环地址，供 Navicat / DataGrip 调试，不对公网暴露
+      - "127.0.0.1:${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./deploy/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - recycle-net
+
+  # 后端服务：脚手架落地后取消注释，并按实际构建方式调整。
+  # backend:
+  #   build: ./backend
+  #   container_name: nuaa-recycle-backend
+  #   restart: unless-stopped
+  #   environment:
+  #     DB_HOST: db
+  #     DB_PORT: 3306
+  #     DB_NAME: ${DB_NAME:-recycle}
+  #     DB_USER: ${DB_USER:-recycle}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     JWT_SECRET: ${JWT_SECRET}
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   networks:
+  #     - recycle-net
+
+volumes:
+  mysql_data:
+
+networks:
+  recycle-net:
+    driver: bridge

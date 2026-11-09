@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 1,
+    "list": [
+      {
+        "id": 1,
+        "example": "替换为真实字段"
+      }
+    ]
+  }
+}
