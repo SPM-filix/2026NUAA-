@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 这是 2026 年 NUAA 软件工程课程的开发大作业仓库。目录骨架已建好，但**仍无源代码、构建脚本和可运行的测试**：
 
-- [README.md](README.md) — 项目简介、功能划分、四阶段流程
-- [小组分工.md](小组分工.md) — 成员职责与阶段分工（与 README 的分工内容重复，需同步修改）
+- [README.md](README.md) — 项目简介、四阶段流程、环境准备
+- [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
 - [协作须知.md](协作须知.md) — 分支、commit、PR、评审与接口协作的团队约定
 - `backend/`、`user-web/`、`admin-web/` — 三端源码目录，目前只有 README
 - `docs/` — 阶段①需求与设计、接口契约 [docs/api.md](docs/api.md)、阶段③④报告
@@ -36,7 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 阶段①未完成前不要写业务代码；接口变更先改 `docs/api.md`。各阶段负责人见 小组分工.md 的「阶段分工对照」。
 
-**改文档时的注意事项**：分工/需求内容在 README.md 和 小组分工.md 中各存一份，修改角色职责或功能列表时必须两处同步，否则会立刻产生冲突。
+**改文档时的注意事项**：分工以 小组分工.md 为准，README.md 不再重复该内容；需求变更先改文档再改代码。
 
 ## 系统是什么
 
