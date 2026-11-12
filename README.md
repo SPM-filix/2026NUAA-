@@ -16,8 +16,9 @@
 
 # 环境准备
 
-1. 安装 Docker Desktop。
-2. 复制并填写环境变量：`cp .env.example .env`，至少设置 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`。
-3. 启动数据库：`docker compose up -d`。
+1. 安装开发工具链：JDK 21、Maven（后端），Node 20+（前端）。
+2. 安装 Docker Desktop（数据库；当前本机尚未安装）。
+3. 复制并填写环境变量：`cp .env.example .env`，至少设置 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`。
+4. 启动数据库：`docker compose up -d`。
 
 应用内连接数据库使用 compose 服务名 `db`，不要写 `localhost`；宿主机 GUI 调试才用 `127.0.0.1`。完整说明见 [deploy/README.md](deploy/README.md)。

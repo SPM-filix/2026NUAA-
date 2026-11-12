@@ -9,6 +9,10 @@
 
 杨光磊
 
+## 技术栈
+
+Vue 3 + Vite + Element Plus（2026-11-12 确定）。
+
 ## 协作约定
 
 - 分支：`feature/admin-web-<描述>`、`fix/admin-web-<描述>`
@@ -22,7 +26,7 @@
 
 脚手架落地后参考：
 
-```
+```text
 admin-web/
 └── src/
     ├── api/
