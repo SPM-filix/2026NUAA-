@@ -24,12 +24,14 @@
 | 协议 | HTTPS（本地可用 HTTP） |
 | 数据格式 | 请求与响应均为 `application/json; charset=utf-8`；上传接口为 `multipart/form-data` |
 | 认证 | 除注册、登录、健康检查外，请求头必须携带 `Authorization: Bearer <token>` |
-| 令牌 | JWT，HS256 签名，默认有效期 7200 秒；载荷含 `sub`（账号 id）、`role`、`exp`、`iat` |
+| 令牌 | JWT，HS256 签名，默认有效期 7200 秒；载荷含 `sub`（账号 id）、`role`、`ver`、`exp`、`iat` |
+| 令牌失效 | `ver` 必须等于账号表中的 `token_version`；改密、登出、账号被禁用时版本 +1，旧令牌立即失效 |
+| 临时密码 | 管理员重置后账号置 `must_change_password=true`；用户用临时密码登录后只能调用 `PUT /api/auth/password`，改密成功清除标记 |
 | 响应体 | 统一 `{ "code": 0, "message": "ok", "data": ... }`；`code = 0` 成功，非 0 为业务错误 |
 | HTTP 状态码 | `401` 未登录 / 令牌失效；`403` 已登录但角色无权。**其余业务错误统一 HTTP 200 + 非 0 `code`**，前端只按 `code` 分支 |
 | 分页 | 请求 `page`（从 1 开始，默认 1）、`size`（默认 10，最大 50）；响应的 `data` 为 `{ "total": 0, "page": 1, "size": 10, "list": [] }` |
-| 时间 | ISO 8601 字符串，不带时区，服务器时区 `Asia/Shanghai`，如 `2026-11-09T15:30:00` |
-| 数值 | 积分、库存、数量为整数；重量为两位小数，单位 kg（字符串或数字均可，前端按数字提交，保留 2 位） |
+| 时间 | ISO 8601 字符串，带 `+08:00` 时区偏移，如 `2026-11-09T15:30:00+08:00`；服务器时区 `Asia/Shanghai` |
+| 数值 | 积分、库存、数量为整数；重量统一为 JSON 数字（number），保留两位小数，单位 kg |
 | 字段命名 | 一律小驼峰 `camelCase`；枚举值一律大写下划线分隔的英文单词 |
 | 空值 | 未赋值字段返回 `null`，不返回空字符串占位；列表为空返回 `[]` 而非 `null` |
 | 幂等 | 兑换接口必须带 `idempotencyKey`（UUID，前端生成）；同一用户同一 key 24 小时内只成交一笔 |
@@ -153,6 +155,8 @@
 | API-AUTH-05 | POST | `/api/auth/logout` | 全部 | 登出 |
 | API-AUTH-06 | PUT | `/api/auth/password` | 全部 | 修改本人密码 |
 | API-AUTH-07 | POST | `/api/auth/recyclers/register` | 匿名 | 回收员注册申请 |
+| API-REC-01 | GET | `/api/recyclers/me` | RECYCLER | 回收员本人资料 |
+| API-ADM-01 | GET | `/api/admins/me` | ADMIN | 管理员本人资料 |
 | API-USER-01 | GET | `/api/users/me` | USER | 查询本人资料 |
 | API-USER-02 | PUT | `/api/users/me` | USER | 修改本人资料 |
 | API-USER-03 | GET | `/api/users/me/qrcode` | USER | 获取身份二维码 |
@@ -218,6 +222,7 @@
 | API-ANN-04 | PUT | `/api/admin/announcements/{announcementId}` | ADMIN | 编辑公告 |
 | API-ANN-05 | PATCH | `/api/admin/announcements/{announcementId}/status` | ADMIN | 发布/下线 |
 | API-ANN-06 | DELETE | `/api/admin/announcements/{announcementId}` | ADMIN | 删除公告 |
+| API-ANN-07 | GET | `/api/admin/announcements` | ADMIN | 公告管理列表 |
 | API-SYS-01 | GET | `/api/health` | 匿名 | 健康检查 |
 
 ---
@@ -262,7 +267,7 @@
 | phone | string | 是 | 手机号 |
 | password | string | 是 | 密码 |
 
-**响应 data**：`token`、`tokenType`、`expiresIn`、`user{ userId, nickname, avatarUrl, pointsBalance }`
+**响应 data**：`token`、`tokenType`、`expiresIn`、`mustChangePassword`（布尔）、`user{ userId, nickname, avatarUrl, pointsBalance }`
 
 **错误码**：`2001` 账号或密码错误、`2002` 账号被禁用
 
@@ -270,7 +275,7 @@
 
 - `POST /api/auth/recyclers/login` ｜ 匿名
 
-请求同上（`phone` + `password`）。**响应 data**：`token`、`tokenType`、`expiresIn`、`recycler{ recyclerId, name, siteId, siteName, status }`
+请求同上（`phone` + `password`）。**响应 data**：`token`、`tokenType`、`expiresIn`、`mustChangePassword`（布尔）、`recycler{ recyclerId, name, siteId, siteName, status }`
 
 **错误码**：`2001`、`2002` 已禁用、`2004` 审核未通过（`message` 中说明待审/驳回原因）
 
@@ -283,7 +288,9 @@
 | username | string | 是 | 后台用户名 |
 | password | string | 是 | 密码 |
 
-**响应 data**：`token`、`tokenType`、`expiresIn`、`admin{ adminId, username }`
+**响应 data**：`token`、`tokenType`、`expiresIn`、`mustChangePassword`（布尔）、`admin{ adminId, username }`
+
+> `mustChangePassword=true` 时，后端除 `PUT /api/auth/password` 外的接口一律返回 `1006`，前端强制跳转改密页。
 
 **错误码**：`2001`、`2002`
 
@@ -291,7 +298,7 @@
 
 - `POST /api/auth/logout` ｜ USER/RECYCLER/ADMIN
 
-**响应 data**：`null`。说明：JWT 无状态，前端清空本地令牌即可；`v0.2` 若引入令牌黑名单（Redis）则服务端同时失效该令牌。
+**响应 data**：`null`。说明：服务端将当前账号的 `token_version` +1，该账号所有已签发令牌立即失效；前端同时清空本地令牌。
 
 ### API-AUTH-06 修改本人密码
 
@@ -302,7 +309,7 @@
 | oldPassword | string | 是 | 原密码 |
 | newPassword | string | 是 | 新密码，8–20 位含字母与数字，且不得与原密码相同 |
 
-**响应 data**：`null`；成功后**令牌立即失效**，前端跳登录页。
+**响应 data**：`null`；成功后 `token_version` +1，该账号所有旧令牌立即失效，前端跳登录页。
 
 **错误码**：`2005` 原密码错误、`2006` 新密码不符合策略
 
@@ -436,6 +443,8 @@
 **响应 data**：上述字段 + `redeemCodeExpireAt`（核销码过期时间）、`siteName`（核销站点）、`verifierName`（核销人姓名，可空）
 
 **错误码**：`1005` 订单不存在、`1003` 非本人订单
+
+说明：用户端固定使用本接口；管理端使用 API-EXC-02，二者返回字段一致。
 
 ### API-USER-09 提交申诉
 
@@ -853,9 +862,9 @@
 
 - `POST /api/admin/accounts/users/{userId}/password/reset` ｜ ADMIN
 
-**响应 data**：`tempPassword`（10 位随机，一次性展示）、`expireAt`（建议 24 小时）
+**响应 data**：`tempPassword`（10 位随机，一次性展示）、`expireAt`（24 小时）
 
-说明：**不提供**直接设置用户新密码的接口（BR-06）；管理员不得知晓用户长期密码。
+说明：**不提供**直接设置用户新密码的接口（BR-06）；管理员不得知晓用户长期密码。重置成功后账号置 `must_change_password=true`，用户用临时密码登录后只能调用 `PUT /api/auth/password`，改密成功清除标记；临时密码过期登录返回 `2007`。
 
 ### API-ACC-04 回收员列表
 
@@ -937,7 +946,23 @@
 
 - `POST /api/admin/accounts/recyclers/{recyclerId}/password/reset` ｜ ADMIN
 
-**响应 data**：`tempPassword`、`expireAt`（同 API-ACC-03 规则）
+**响应 data**：`tempPassword`、`expireAt`（同 API-ACC-03 规则）。账号置 `must_change_password=true`，首次登录强制改密；临时密码过期返回 `2007`。
+
+### API-REC-01 回收员本人资料
+
+- `GET /api/recyclers/me` ｜ RECYCLER
+
+**响应 data**：`recyclerId`、`name`、`phone`、`employeeNo`、`siteId`、`siteName`、`status`、`createdAt`
+
+说明：供管理端个人中心展示；改密仍用 `PUT /api/auth/password`，不提供修改姓名与工号的接口。
+
+### API-ADM-01 管理员本人资料
+
+- `GET /api/admins/me` ｜ ADMIN
+
+**响应 data**：`adminId`、`username`、`createdAt`
+
+说明：供管理端个人中心展示；改密仍用 `PUT /api/auth/password`。
 
 ---
 
@@ -1014,7 +1039,7 @@
 
 **错误码**：`4001` 类型不支持、`4002` 超过大小限制
 
-说明：服务端需校验真实文件头而非仅扩展名；文件名随机化，禁止路径穿越。
+说明：服务端需校验真实文件头而非仅扩展名；文件名随机化，禁止路径穿越。本地存储目录在容器中必须挂载持久化卷（`uploads_data`），容器重建不得丢文件。
 
 ---
 
@@ -1070,6 +1095,21 @@
 
 **响应 data**：`null`。说明：物理删除即可（公告无业务关联数据），或软删除以保留历史。
 
+### API-ANN-07 公告管理列表
+
+- `GET /api/admin/announcements?page=1&size=20&type=&status=&keyword=` ｜ ADMIN
+
+| 参数 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| page / size | query | int | 否 | 分页 |
+| type | query | string | 否 | `NOTICE` / `KNOWLEDGE` |
+| status | query | string | 否 | `PUBLISHED` / `OFFLINE` |
+| keyword | query | string | 否 | 标题模糊搜索，≤50 字 |
+
+**响应 list 元素**：`announcementId`、`title`、`type`、`status`、`coverUrl`、`publishedAt`、`createdAt`、`updatedAt`
+
+说明：管理员可见全部状态；用户端仍使用 API-ANN-01。
+
 ---
 
 ## 16. 系统（SYS）
@@ -1100,6 +1140,8 @@
 | avatar_url | varchar(255) | | 头像 |
 | address | varchar(100) | | 地址备注 |
 | points_balance | int | NOT NULL DEFAULT 0, CHECK ≥ 0 | 积分余额 |
+| token_version | int | NOT NULL DEFAULT 0 | JWT 版本号，改密/登出/禁用时 +1 |
+| must_change_password | tinyint(1) | NOT NULL DEFAULT 0 | 临时密码登录后强制改密标记 |
 | status | varchar(10) | NOT NULL DEFAULT 'ACTIVE' | `ACTIVE` / `DISABLED` |
 | disabled_reason | varchar(200) | | 禁用原因 |
 | created_at / updated_at | datetime | NOT NULL | 时间 |
@@ -1115,6 +1157,8 @@
 | employee_no | varchar(20) | NOT NULL | 工号 |
 | site_id | bigint | FK → site.id | 所属站点 |
 | status | varchar(10) | NOT NULL DEFAULT 'PENDING' | `PENDING`/`APPROVED`/`REJECTED`/`DISABLED` |
+| token_version | int | NOT NULL DEFAULT 0 | JWT 版本号，改密/登出/禁用时 +1 |
+| must_change_password | tinyint(1) | NOT NULL DEFAULT 0 | 临时密码登录后强制改密标记 |
 | apply_reason | varchar(200) | | 申请说明 |
 | reject_reason | varchar(200) | | 驳回原因 |
 | approved_by | bigint | FK → admin_user.id | 审核人 |
@@ -1129,6 +1173,7 @@
 | username | varchar(30) | UNIQUE, NOT NULL | 登录名 |
 | password_hash | varchar(100) | NOT NULL | 密码哈希 |
 | status | varchar(10) | NOT NULL DEFAULT 'ACTIVE' | 状态 |
+| token_version | int | NOT NULL DEFAULT 0 | JWT 版本号，改密/登出/禁用时 +1 |
 | created_at / updated_at | datetime | NOT NULL | 时间 |
 
 ### 17.4 site（回收站点）
@@ -1190,7 +1235,7 @@
 | revoked_at | datetime | | 撤销时间 |
 | created_at | datetime | NOT NULL | 投递时间 |
 
-索引：`idx_user_created (user_id, created_at DESC)`、`idx_recycler_created (recycler_id, created_at DESC)`、`idx_status (status)`。
+索引：`idx_user_created (user_id, created_at DESC)`、`idx_recycler_created (recycler_id, created_at DESC)`、`idx_status (status)`、`idx_created_at (created_at)`。
 
 ### 17.8 points_log（积分明细）
 
@@ -1221,7 +1266,7 @@
 | cover_url | varchar(255) | | 封面 |
 | points_price | int | NOT NULL, CHECK ≥ 1 | 所需积分 |
 | stock | int | NOT NULL DEFAULT 0, CHECK ≥ 0 | 库存 |
-| sold_count | int | NOT NULL DEFAULT 0 | 已兑数量 |
+| sold_count | int | NOT NULL DEFAULT 0 | 已兑数量（接口字段名为 `salesCount`） |
 | spec | varchar(100) | | 规格 |
 | exchange_notice | varchar(200) | | 兑换须知 |
 | status | varchar(10) | NOT NULL DEFAULT 'ON' | `ON`/`OFF` |
@@ -1249,7 +1294,7 @@
 | idempotency_key | varchar(64) | UNIQUE(user_id, key) | 幂等键 |
 | created_at | datetime | NOT NULL | 下单时间 |
 
-索引：`uk_redeem_code (redeem_code)`、`idx_user_created (user_id, created_at DESC)`、`idx_status (status)`。
+索引：`uk_redeem_code (redeem_code)`、`idx_user_created (user_id, created_at DESC)`、`idx_status (status)`、`idx_created_at (created_at)`。
 
 ### 17.11 announcement（公告）
 
@@ -1279,6 +1324,24 @@
 | handled_at | datetime | | 处理时间 |
 | created_at | datetime | NOT NULL | 提交时间 |
 
+索引：`idx_status_created (status, created_at DESC)`、`idx_user_created (user_id, created_at DESC)`。
+
+### 17.13 upload_file（上传文件）
+
+| 字段 | 类型 | 约束 | 说明 |
+| --- | --- | --- | --- |
+| id | bigint | PK | 文件 id |
+| url | varchar(255) | NOT NULL | 可访问 URL |
+| storage_path | varchar(255) | NOT NULL | 本地存储路径或 OSS key |
+| size | int | NOT NULL | 字节数 |
+| mime | varchar(50) | NOT NULL | MIME 类型 |
+| scene | varchar(20) | NOT NULL | `PRODUCT` / `AVATAR` / `ANNOUNCEMENT` |
+| uploaded_by_type | varchar(10) | NOT NULL | `USER` / `RECYCLER` / `ADMIN` |
+| uploaded_by_id | bigint | NOT NULL | 上传人 id |
+| created_at | datetime | NOT NULL | 上传时间 |
+
+索引：`idx_uploader (uploaded_by_type, uploaded_by_id, created_at DESC)`。
+
 ---
 
 ## 18. 状态机与关键约束（实现校验清单）
@@ -1291,7 +1354,7 @@
 | user.status | `ACTIVE ⇄ DISABLED` | `1006` |
 | product.status | `ON ⇄ OFF` | `1006` |
 
-**实现必须满足的 7 条硬约束**
+**实现必须满足的 11 条硬约束**
 
 1. 用户端不存在改积分的接口；请求体中的 `points`、`pointsBalance`、`role` 一律忽略（BR-01）。
 2. `ADMIN` 调 `POST /api/deliveries`、`POST /api/exchanges/redeem` 直接 403（BR-04）。
@@ -1300,6 +1363,10 @@
 5. 兑换必须校验 `idempotencyKey`，同 key 返回首笔结果（BR-08）。
 6. 核销码一次性，重复核销返回 `3005`（BR-09）。
 7. 所有撤销/调整/取消操作必须写操作人、原因、时间（可追溯）。
+8. 鉴权必须校验 JWT 的 `ver` 与账号 `token_version` 一致；改密、登出、禁用时版本 +1。
+9. `must_change_password=true` 的账号，除 `PUT /api/auth/password` 外一律返回 `1006`。
+10. 积分扣减使用 `UPDATE user SET points_balance = points_balance - ? WHERE id = ? AND points_balance >= ?`，影响行数为 0 返回 `3001`；库存扣减同理配合 `version` 条件。
+11. `user_code`、`record_no`、`order_no`、`redeem_code` 生成冲突时必须重试，唯一索引兜底。
 
 ---
 
@@ -1324,16 +1391,16 @@
 
 ## 20. 待确认与风险
 
-| 编号 | 事项 | 当前取值 | 需要确认的人 |
+| 编号 | 事项 | 结论 | 状态 |
 | --- | --- | --- | --- |
-| Q-1 | 积分取整方式 | `round(weight × pointsPerKg)`，最低 1 分 | 邓裕达 |
-| Q-2 | 核销码有效期 | 30 天 | 杨光磊 |
-| Q-3 | `userCode` 是否随注册生成 | 是，6 位数字，全局唯一 | 陈益苇 |
-| Q-4 | 上传存储 | 本地磁盘 + `/uploads` 静态目录 | 陈益苇 |
-| Q-5 | 令牌黑名单（登出即刻失效） | `v0.1` 不做，前端清令牌 | 邓裕达 |
-| Q-6 | 统计看板是否需要实时推送 | 不推送，进页面拉取 | 杨光磊 |
-| Q-7 | 公告是否支持富文本 | 纯文本 + 换行，避免 XSS 与额外依赖 | 魏鸿 |
-| Q-8 | 是否需要操作审计表 | 建议 P2，先保证流水/明细可追溯 | 全员 |
+| Q-1 | 积分取整方式 | `round(weight × pointsPerKg)`，最低 1 分 | 已确认 2026-11-12 |
+| Q-2 | 核销码有效期 | 30 天 | 已确认 2026-11-12 |
+| Q-3 | `userCode` 是否随注册生成 | 是，6 位数字，全局唯一 | 已确认 2026-11-12 |
+| Q-4 | 上传存储 | 本地磁盘 + `/uploads` 静态目录，容器挂载持久化卷 | 已确认 2026-11-12 |
+| Q-5 | 令牌失效策略 | JWT + `token_version`，不引入 Redis 黑名单 | 已确认 2026-11-12 |
+| Q-6 | 统计看板是否需要实时推送 | 不推送，进页面拉取 | 已确认 2026-11-12 |
+| Q-7 | 公告是否支持富文本 | 纯文本 + 换行，避免 XSS 与额外依赖 | 已确认 2026-11-12 |
+| Q-8 | 是否需要操作审计表 | P2 可选，先保证流水/明细可追溯 | 已确认 2026-11-12 |
 
 ---
 

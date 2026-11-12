@@ -17,12 +17,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 因此当前**没有**可运行的 build / lint / test 命令。脚手架落地后在此补充实际命令，不要保留推测的命令。
 
+## 技术选型（2026-11-12 确定）
+
+- 后端：Spring Boot 3 + JDK 21 + Maven + MySQL 8.0
+- 前端：Vue 3 + Vite + Element Plus（`user-web` 与 `admin-web` 同一套技术栈）
+- 鉴权：JWT + `token_version`；改密、登出、禁用后旧令牌立即失效
+- 密码重置：管理员生成临时密码，用户首次登录强制改密（`must_change_password`）
+- 接口契约以 [docs/api.md](docs/api.md) 为唯一依据，2026-11-12 的决策已回写
+
 ## 本地环境
 
 - 根目录 [compose.yaml](compose.yaml) 提供 MySQL 8.0；后端、Nginx 服务待脚手架落地后加入
 - 应用连接数据库统一使用 compose 服务名 `DB_HOST=db`，**禁止写 `localhost`**；宿主机 GUI 才用 `127.0.0.1:${MYSQL_HOST_PORT}`
 - 首次启动：`cp .env.example .env` 并填写 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`，然后 `docker compose up -d`
 - 建表与初始化脚本放 `deploy/mysql/init/`，仅在数据卷首次创建时执行
+- 上传目录使用命名卷 `uploads_data`，容器重建不丢文件
+- 本机工具链（2026-11-12）：JDK 21.0.13（`JAVA_HOME` 已设置）、Maven 3.9.16（`MAVEN_HOME` 已设置）、Node 24.15.0 / npm 11.12.1
+- **Docker Desktop 未安装**，MySQL 容器未启动；安装前不要假设 `docker compose` 可用
+- 已在运行的 Claude 会话可能仍继承旧的 Java 8 PATH；构建时显式使用 `JAVA_HOME`，或重启会话后再执行
 - 详细命令见 [deploy/README.md](deploy/README.md)
 
 ## 开发阶段

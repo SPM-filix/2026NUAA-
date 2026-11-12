@@ -8,6 +8,10 @@
 
 赵哲禹
 
+## 技术栈
+
+Vue 3 + Vite + Element Plus（2026-11-12 确定）。
+
 ## 协作约定
 
 - 分支：`feature/user-web-<描述>`、`fix/user-web-<描述>`
@@ -21,7 +25,7 @@
 
 脚手架落地后参考：
 
-```
+```text
 user-web/
 └── src/
     ├── api/        # 按模块封装的请求

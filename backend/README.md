@@ -16,7 +16,7 @@
 - 分支：`feature/backend-<描述>`、`fix/backend-<描述>`
 - commit scope：`backend`、`auth`、`delivery`、`exchange`、`mall`、`stats`、`upload`
 - 所有接口以 [docs/api.md](../docs/api.md) 为准；接口变更必须同 PR 更新该文档
-- 技术栈在阶段①确定后补充到这里
+- 技术栈（2026-11-12 确定）：Spring Boot 3 + JDK 21 + Maven，MySQL 8.0；持久层 MyBatis-Plus 或 Spring Data JPA 由后端负责人确定
 - 不提交 `target/`、构建产物和含密钥的配置文件
 
 ## 环境

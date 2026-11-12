@@ -1,6 +1,10 @@
 # deploy — 环境与部署
 
-本地和服务器共用根目录的 [compose.yaml](../compose.yaml)。目标环境：阿里云 / 腾讯云学生机，Docker + MySQL + Nginx + 后端运行时。
+本地和服务器共用根目录的 [compose.yaml](../compose.yaml)。目标环境：阿里云 / 腾讯云学生机，Docker + MySQL 8.0 + Nginx + 后端运行时。
+
+技术栈（2026-11-12 确定）：Spring Boot 3 + JDK 21 + Maven（后端），Vue 3 + Vite + Element Plus（前端）。
+
+> 当前本机尚未安装 Docker Desktop（2026-11-12），配置层已就绪但容器未启动、未验证；安装后按本文命令执行。
 
 ## 目录
 
@@ -42,6 +46,7 @@ docker compose exec db mysql -urecycle -p recycle -e "SELECT VERSION();"
 ## 数据持久化
 
 - 数据存放在 Docker 命名卷 `mysql_data`，`docker compose down` 不会删除数据。
+- 上传文件存放在命名卷 `uploads_data`，挂载到后端容器的 `UPLOAD_DIR`；Nginx 以只读方式提供 `/uploads`。容器重建不得丢文件。
 - `docker compose down -v` 会删除数据卷，**仅限开发环境**重置时使用。
 - 备份：
 
