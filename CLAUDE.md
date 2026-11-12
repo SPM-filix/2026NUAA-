@@ -32,8 +32,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 首次启动：`cp .env.example .env` 并填写 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`，然后 `docker compose up -d`
 - 建表与初始化脚本放 `deploy/mysql/init/`，仅在数据卷首次创建时执行
 - 上传目录使用命名卷 `uploads_data`，容器重建不丢文件
-- **本机尚未安装 Docker Desktop（2026-11-12）**，MySQL 容器未启动；安装前不要假设 `docker compose` 可用
-- 脚手架落地需要 JDK 21、Maven、Node 20+；实际命令补进本文件
+- 本机工具链（2026-11-12）：JDK 21.0.13（`JAVA_HOME` 已设置）、Maven 3.9.16（`MAVEN_HOME` 已设置）、Node 24.15.0 / npm 11.12.1
+- **Docker Desktop 未安装**，MySQL 容器未启动；安装前不要假设 `docker compose` 可用
+- 已在运行的 Claude 会话可能仍继承旧的 Java 8 PATH；构建时显式使用 `JAVA_HOME`，或重启会话后再执行
 - 详细命令见 [deploy/README.md](deploy/README.md)
 
 ## 开发阶段
