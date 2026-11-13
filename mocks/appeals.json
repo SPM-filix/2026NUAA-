@@ -1,0 +1,56 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "appealId": 1,
+        "userId": 2,
+        "userNickname": "林小满",
+        "userPhoneMasked": "138****2345",
+        "targetType": "EXCHANGE",
+        "targetId": 3,
+        "targetNo": "E202611110003",
+        "description": "兑换的笔记本已经三天了，站点说没有货，麻烦帮忙确认一下什么时候能领取。",
+        "status": "PENDING",
+        "conclusion": null,
+        "handledBy": null,
+        "handledAt": null,
+        "createdAt": "2026-11-12T19:20:00+08:00"
+      },
+      {
+        "appealId": 2,
+        "userId": 4,
+        "userNickname": "赵小舟",
+        "userPhoneMasked": "138****4567",
+        "targetType": "DELIVERY",
+        "targetId": 13,
+        "targetNo": "D20261110001",
+        "description": "11 月 10 日投递的废纸被撤销了，当时重量确实称错了，但是只差一点点，希望核实后处理。",
+        "status": "ACCEPTED",
+        "conclusion": "经核实回收员录入重量有误，已允许撤销；差额积分已另行补偿。",
+        "handledBy": "admin",
+        "handledAt": "2026-11-11T10:15:00+08:00",
+        "createdAt": "2026-11-10T18:05:00+08:00"
+      },
+      {
+        "appealId": 3,
+        "userId": 5,
+        "userNickname": "周雨",
+        "userPhoneMasked": "138****5678",
+        "targetType": "DELIVERY",
+        "targetId": 8,
+        "targetNo": "D20261112003",
+        "description": "我投递的废纸重量应该是 3 kg，系统只记录了 2.1 kg，请复核。",
+        "status": "REJECTED",
+        "conclusion": "经复核称重记录与站点监控一致，维持原记录。",
+        "handledBy": "admin",
+        "handledAt": "2026-11-13T09:30:00+08:00",
+        "createdAt": "2026-11-12T20:10:00+08:00"
+      }
+    ]
+  }
+}
