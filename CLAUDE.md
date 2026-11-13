@@ -4,18 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。目录骨架已建好，但**仍无源代码、构建脚本和可运行的测试**：
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。后端骨架与核心模块已通过编译、单元测试和打包，MySQL 运行时尚未验证；前端仍无源码：
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
 - [协作须知.md](协作须知.md) — 分支、commit、PR、评审与接口协作的团队约定
-- `backend/`、`user-web/`、`admin-web/` — 三端源码目录，目前只有 README
+- `backend/` — Spring Boot 3 后端骨架，已实现认证、投递、兑换等核心模块；交接文档 [backend/docs/HANDOVER.md](backend/docs/HANDOVER.md)
+- `user-web/`、`admin-web/` — 前端源码目录，目前只有 README
 - `docs/` — 阶段①需求与设计、接口契约 [docs/api.md](docs/api.md)、阶段③④报告
 - `mocks/` — 阶段② Mock 数据
 - `tests/` — Postman 集合与系统测试用例
 - `deploy/` — 阶段④部署配置
 
-因此当前**没有**可运行的 build / lint / test 命令。脚手架落地后在此补充实际命令，不要保留推测的命令。
+后端构建与测试命令（当前会话需显式 `JAVA_HOME`）：
+
+```bash
+cd backend
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTests compile
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
+```
+
+已验证：`mvn clean compile`、`mvn test`（22 个测试）、`mvn package` 均通过。MySQL 未启动，运行应用前需安装 Docker 并执行 `docker compose up -d`。前端暂无构建命令。
 
 ## 技术选型（2026-11-12 确定）
 
