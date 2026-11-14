@@ -14,10 +14,13 @@ export function usePagedList(fetcher, { size = 10 } = {}) {
   let requestId = 0
 
   async function load(reset = false) {
-    if (loading.value) return
-    if (!reset && finished.value) return
+    // 加载更多时避免并发；重置请求则允许打断进行中的请求，避免切换筛选后仍显示旧结果。
+    if (!reset && (loading.value || finished.value)) return
     const page = reset ? 1 : nextPage
     if (reset) {
+      list.value = []
+      total.value = 0
+      nextPage = 1
       finished.value = false
       error.value = ''
     }

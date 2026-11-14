@@ -33,7 +33,11 @@ export const useAuthStore = defineStore('auth', {
         user: data.user || null,
         mustChangePassword: data.mustChangePassword,
       })
-      await this.fetchMe()
+      // 临时密码登录只允许调用 PUT /api/auth/password，请求 /users/me 会失败，
+      // 因此直接进入强制改密流程，避免 login 被 reject。
+      if (!this.mustChangePassword) {
+        await this.fetchMe()
+      }
       return data
     },
     async register(payload) {
