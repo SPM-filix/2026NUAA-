@@ -1,0 +1,95 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 6,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "productId": 1,
+        "name": "环保帆布袋",
+        "coverUrl": "/covers/canvas-bag.svg",
+        "pointsPrice": 300,
+        "stock": 42,
+        "status": "ON",
+        "description": "加厚棉麻材质，可重复使用，循环替代一次性塑料袋。",
+        "spec": "38 × 42 cm / 棉麻",
+        "exchangeNotice": "兑换后 30 天内到所选站点出示核销码领取。",
+        "salesCount": 1,
+        "createdAt": "2026-09-05T10:00:00+08:00",
+        "updatedAt": "2026-11-08T09:30:00+08:00"
+      },
+      {
+        "productId": 2,
+        "name": "竹纤维随行杯",
+        "coverUrl": "/covers/bamboo-cup.svg",
+        "pointsPrice": 500,
+        "stock": 18,
+        "status": "ON",
+        "description": "天然竹纤维杯身，轻便耐摔，自带茶隔。",
+        "spec": "450 ml / 竹纤维",
+        "exchangeNotice": "杯盖颜色随机发放，不支持指定。",
+        "salesCount": 1,
+        "createdAt": "2026-09-12T14:20:00+08:00",
+        "updatedAt": "2026-11-10T11:00:00+08:00"
+      },
+      {
+        "productId": 3,
+        "name": "再生纸笔记本套装",
+        "coverUrl": "/covers/notebook.svg",
+        "pointsPrice": 180,
+        "stock": 1,
+        "status": "ON",
+        "description": "100% 再生纸内页，一套三本，适合课堂笔记。",
+        "spec": "A5 / 3 本装",
+        "exchangeNotice": "库存紧张，每人限兑 1 套。",
+        "salesCount": 0,
+        "createdAt": "2026-10-01T09:00:00+08:00",
+        "updatedAt": "2026-11-11T10:00:00+08:00"
+      },
+      {
+        "productId": 4,
+        "name": "折叠晴雨伞",
+        "coverUrl": "/covers/umbrella.svg",
+        "pointsPrice": 800,
+        "stock": 0,
+        "status": "ON",
+        "description": "黑胶防晒涂层，五折便携，晴雨两用。",
+        "spec": "五折 / 防晒 UPF50+",
+        "exchangeNotice": "补货周期约 7 天，请关注公告。",
+        "salesCount": 1,
+        "createdAt": "2026-09-20T16:40:00+08:00",
+        "updatedAt": "2026-11-07T17:35:00+08:00"
+      },
+      {
+        "productId": 5,
+        "name": "不锈钢保温饭盒",
+        "coverUrl": "/covers/lunch-box.svg",
+        "pointsPrice": 1200,
+        "stock": 7,
+        "status": "ON",
+        "description": "双层真空保温，分格设计，附便携餐具。",
+        "spec": "1.2 L / 304 不锈钢",
+        "exchangeNotice": "兑换后请当场检查密封圈是否完好。",
+        "salesCount": 0,
+        "createdAt": "2026-10-15T08:30:00+08:00",
+        "updatedAt": "2026-11-12T09:00:00+08:00"
+      },
+      {
+        "productId": 6,
+        "name": "桌面绿植盲盒",
+        "coverUrl": "/covers/plant.svg",
+        "pointsPrice": 260,
+        "stock": 25,
+        "status": "OFF",
+        "description": "随机多肉或绿萝小盆栽，给书桌添一点绿色。",
+        "spec": "随机 1 盆 / 含陶盆",
+        "exchangeNotice": "植物活体，兑换后不支持退换。",
+        "salesCount": 0,
+        "createdAt": "2026-10-20T13:10:00+08:00",
+        "updatedAt": "2026-11-09T10:00:00+08:00"
+      }
+    ]
+  }
+}

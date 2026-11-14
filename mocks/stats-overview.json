@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "totalWeight": 104.7,
+    "totalPointsIssued": 1302,
+    "totalPointsRedeemed": 1600,
+    "userCount": 6,
+    "recyclerCount": 3,
+    "completedOrderCount": 3,
+    "pendingRecyclerCount": 1,
+    "pendingAppealCount": 1,
+    "expiredPendingOrderCount": 1
+  }
+}

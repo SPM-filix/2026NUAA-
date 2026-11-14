@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "siteId": 1,
+      "name": "东山回收站",
+      "address": "南京市江宁区将军大道 29 号",
+      "openTime": "08:00-20:00",
+      "manager": "王建国",
+      "phone": "025-52110001",
+      "status": "ENABLED"
+    },
+    {
+      "siteId": 2,
+      "name": "西区环保驿站",
+      "address": "南京市江宁区胜太路 18 号",
+      "openTime": "09:00-18:00",
+      "manager": "李慧",
+      "phone": "025-52110002",
+      "status": "ENABLED"
+    },
+    {
+      "siteId": 3,
+      "name": "翠屏山回收点",
+      "address": "南京市江宁区翠屏山路 6 号",
+      "openTime": "07:30-19:30",
+      "manager": "张强",
+      "phone": "025-52110003",
+      "status": "DISABLED"
+    }
+  ]
+}
