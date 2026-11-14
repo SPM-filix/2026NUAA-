@@ -4,19 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。后端骨架与核心模块已通过编译、单元测试和打包，MySQL 运行时尚未验证；前端仍无源码：
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
 - [协作须知.md](协作须知.md) — 分支、commit、PR、评审与接口协作的团队约定
-- `backend/` — 后端源码（Spring Boot 3 + JDK 21 + Maven），陈益苇已完成商品/类别/站点/公告/文件上传/统计/账号管理模块
-- `user-web/`、`admin-web/` — 前端源码目录
+- `backend/` — Spring Boot 3 后端，已集成认证/投递/兑换核心与商品/类别/站点/公告/上传/统计/账号模块；交接文档 [backend/docs/HANDOVER.md](backend/docs/HANDOVER.md)
+- `user-web/`、`admin-web/` — 前端源码目录，目前只有 README
 - `docs/` — 阶段①需求与设计、接口契约 [docs/api.md](docs/api.md)、阶段③④报告
 - `mocks/` — 阶段② Mock 数据
 - `tests/` — Postman 集合与系统测试用例
 - `deploy/` — 阶段④部署配置
 
-后端已有可编译的 Maven 项目：`backend/pom.xml` 及完整源码。编译命令见 [backend/README.md](backend/README.md)。
+后端构建与测试命令（当前会话需显式 `JAVA_HOME`）：
+
+```bash
+cd backend
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTests compile
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
+```
+
+已验证：`mvn clean compile`、`mvn test`（22 个测试）、`mvn package` 均通过；禁用 Flyway、不连接数据库时 Spring 上下文可正常启动。MySQL 未启动，运行应用前需安装 Docker 并执行 `docker compose up -d`。前端暂无构建命令。
 
 ## 技术选型（2026-11-12 确定）
 
@@ -26,13 +34,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 密码重置：管理员生成临时密码，用户首次登录强制改密（`must_change_password`）
 - 接口契约以 [docs/api.md](docs/api.md) 为唯一依据，2026-11-12 的决策已回写
 
+## 后端分包约定
+
+后端并存两种历史分包风格，新增代码时沿用所属层，不要重复造同名类：
+
+| 层 | 包 | 说明 |
+| --- | --- | --- |
+| 核心（邓裕达） | `auth/`、`user/`、`catalog/`、`delivery/`、`exchange/` | 认证、投递、兑换、并发控制、Flyway |
+| 模块层（陈益苇） | `controller/`、`service/`、`entity/`、`mapper/` | 商品、类别、站点、公告、上传、统计、账号管理 |
+
+- 响应封装：核心用 `common/api/ApiResponse`，模块层用 `common/R`，JSON 结构一致。
+- 模块层 Mapper 统一 `Module*` 前缀，避免与核心 Mapper 的 Bean 名冲突；新增 Mapper 必须保持唯一简单名。
+- 统计 `StatsService` 目前是占位聚合；用户申诉、用户资料修改、OSS 上传仍待补。
+
 ## 本地环境
 
 - 根目录 [compose.yaml](compose.yaml) 提供 MySQL 8.0；后端、Nginx 服务待脚手架落地后加入
 - 应用连接数据库统一使用 compose 服务名 `DB_HOST=db`，**禁止写 `localhost`**；宿主机 GUI 才用 `127.0.0.1:${MYSQL_HOST_PORT}`
 - 首次启动：`cp .env.example .env` 并填写 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`，然后 `docker compose up -d`
 - 建表与初始化脚本放 `deploy/mysql/init/`，仅在数据卷首次创建时执行
-- 上传目录使用命名卷 `uploads_data`，容器重建不丢文件
+- 上传目录使用命名卷 `uploads_data`，后端通过 `UPLOAD_PATH` 指定，容器内建议 `/app/uploads`
 - 本机工具链（2026-11-12）：JDK 21.0.13（`JAVA_HOME` 已设置）、Maven 3.9.16（`MAVEN_HOME` 已设置）、Node 24.15.0 / npm 11.12.1
 - **Docker Desktop 未安装**，MySQL 容器未启动；安装前不要假设 `docker compose` 可用
 - 已在运行的 Claude 会话可能仍继承旧的 Java 8 PATH；构建时显式使用 `JAVA_HOME`，或重启会话后再执行

@@ -1,6 +1,7 @@
 package com.nuaa.recycle.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -13,6 +14,7 @@ public class PointsLog {
     private Long id;
     private Long userId;
     private String type;
+    @TableField("`change`")
     private Integer change;
     private Integer balanceAfter;
     private String bizType;

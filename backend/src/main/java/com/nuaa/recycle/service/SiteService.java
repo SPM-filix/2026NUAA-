@@ -3,7 +3,7 @@ package com.nuaa.recycle.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.nuaa.recycle.common.BizException;
 import com.nuaa.recycle.entity.Site;
-import com.nuaa.recycle.mapper.SiteMapper;
+import com.nuaa.recycle.mapper.ModuleSiteMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,7 @@ import java.util.List;
 public class SiteService {
 
     @Autowired
-    private SiteMapper siteMapper;
+    private ModuleSiteMapper siteMapper;
 
     public List<Site> list(Boolean enabledOnly) {
         LambdaQueryWrapper<Site> qw = new LambdaQueryWrapper<Site>();

@@ -45,7 +45,7 @@ services:
   #     DB_PASSWORD: ${DB_PASSWORD}
   #     JWT_SECRET: ${JWT_SECRET}
   #     JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-120}
-  #     UPLOAD_DIR: /app/uploads
+  #     UPLOAD_PATH: /app/uploads
   #   volumes:
   #     - uploads_data:/app/uploads
   #   depends_on:

@@ -12,6 +12,7 @@
 | ① | 接口契约 | [api.md](api.md) | 魏鸿起草，邓裕达 / 陈益苇确认 | 草案 v0.1 |
 | ③ | 系统测试报告 | [reports/](reports/) | 陈益苇 | 待编写 |
 | ④ | 开发报告、答辩 PPT | [reports/](reports/) | 魏鸿 | 待编写 |
+| ② | 后端核心模块交接文档 | [../backend/docs/HANDOVER.md](../backend/docs/HANDOVER.md) | 邓裕达 | 初稿 |
 
 ## 文档约定
 

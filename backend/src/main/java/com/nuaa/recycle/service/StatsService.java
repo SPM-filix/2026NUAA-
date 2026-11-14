@@ -13,13 +13,13 @@ import java.util.*;
 @Service
 public class StatsService {
 
-    @Autowired private DeliveryRecordMapper deliveryRecordMapper;
-    @Autowired private ExchangeOrderMapper exchangeOrderMapper;
-    @Autowired private UserMapper userMapper;
-    @Autowired private RecyclerMapper recyclerMapper;
-    @Autowired private AppealMapper appealMapper;
-    @Autowired private RecycleCategoryMapper categoryMapper;
-    @Autowired private ProductMapper productMapper;
+    @Autowired private ModuleDeliveryRecordMapper deliveryRecordMapper;
+    @Autowired private ModuleExchangeOrderMapper exchangeOrderMapper;
+    @Autowired private ModuleUserMapper userMapper;
+    @Autowired private ModuleRecyclerMapper recyclerMapper;
+    @Autowired private ModuleAppealMapper appealMapper;
+    @Autowired private ModuleRecycleCategoryMapper categoryMapper;
+    @Autowired private ModuleProductMapper productMapper;
 
     public Map<String, Object> overview() {
         Map<String, Object> map = new HashMap<>();

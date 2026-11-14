@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nuaa.recycle.common.BizException;
 import com.nuaa.recycle.common.PageResult;
 import com.nuaa.recycle.entity.Announcement;
-import com.nuaa.recycle.mapper.AnnouncementMapper;
+import com.nuaa.recycle.mapper.ModuleAnnouncementMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class AnnouncementService {
 
     @Autowired
-    private AnnouncementMapper announcementMapper;
+    private ModuleAnnouncementMapper announcementMapper;
 
     public PageResult<Announcement> list(Integer page, Integer size, String type) {
         Page<Announcement> p = new Page<>(page, size);

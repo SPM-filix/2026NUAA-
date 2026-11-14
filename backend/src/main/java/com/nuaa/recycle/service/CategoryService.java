@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nuaa.recycle.common.BizException;
 import com.nuaa.recycle.entity.PointsRule;
 import com.nuaa.recycle.entity.RecycleCategory;
-import com.nuaa.recycle.mapper.DeliveryRecordMapper;
-import com.nuaa.recycle.mapper.PointsRuleMapper;
-import com.nuaa.recycle.mapper.RecycleCategoryMapper;
+import com.nuaa.recycle.mapper.ModuleDeliveryRecordMapper;
+import com.nuaa.recycle.mapper.ModulePointsRuleMapper;
+import com.nuaa.recycle.mapper.ModuleRecycleCategoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +19,11 @@ import java.util.List;
 public class CategoryService {
 
     @Autowired
-    private RecycleCategoryMapper categoryMapper;
+    private ModuleRecycleCategoryMapper categoryMapper;
     @Autowired
-    private PointsRuleMapper pointsRuleMapper;
+    private ModulePointsRuleMapper pointsRuleMapper;
     @Autowired
-    private DeliveryRecordMapper deliveryRecordMapper;
+    private ModuleDeliveryRecordMapper deliveryRecordMapper;
 
     public List<RecycleCategory> listWithRules() {
         return categoryMapper.selectListWithCurrentRule();

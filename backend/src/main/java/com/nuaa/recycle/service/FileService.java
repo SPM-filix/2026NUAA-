@@ -3,8 +3,7 @@ package com.nuaa.recycle.service;
 import com.nuaa.recycle.common.BizException;
 import com.nuaa.recycle.common.UserContext;
 import com.nuaa.recycle.entity.UploadFile;
-import com.nuaa.recycle.mapper.UploadFileMapper;
-import org.apache.commons.codec.digest.DigestUtils;
+import com.nuaa.recycle.mapper.ModuleUploadFileMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ public class FileService {
     private static final long MAX_SIZE = 2 * 1024 * 1024;
 
     @Autowired
-    private UploadFileMapper uploadFileMapper;
+    private ModuleUploadFileMapper uploadFileMapper;
 
     public UploadFile upload(MultipartFile file, String scene) throws IOException {
         if (file == null || file.isEmpty()) throw new BizException(1001, "文件不能为空");

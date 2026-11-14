@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nuaa.recycle.common.*;
 import com.nuaa.recycle.entity.Product;
-import com.nuaa.recycle.mapper.ExchangeOrderMapper;
-import com.nuaa.recycle.mapper.ProductMapper;
+import com.nuaa.recycle.mapper.ModuleExchangeOrderMapper;
+import com.nuaa.recycle.mapper.ModuleProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +20,9 @@ import java.util.Map;
 public class ProductService {
 
     @Autowired
-    private ProductMapper productMapper;
+    private ModuleProductMapper productMapper;
     @Autowired
-    private ExchangeOrderMapper exchangeOrderMapper;
+    private ModuleExchangeOrderMapper exchangeOrderMapper;
 
     public PageResult<Product> list(Integer page, Integer size, String keyword, String sort, Boolean onlyAvailable) {
         Page<Product> p = new Page<>(page, size);

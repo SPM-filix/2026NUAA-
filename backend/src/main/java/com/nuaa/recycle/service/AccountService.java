@@ -16,12 +16,12 @@ import java.util.*;
 @Service
 public class AccountService {
 
-    @Autowired private UserMapper userMapper;
-    @Autowired private RecyclerMapper recyclerMapper;
-    @Autowired private AppealMapper appealMapper;
-    @Autowired private PointsLogMapper pointsLogMapper;
-    @Autowired private SiteMapper siteMapper;
-    @Autowired private AdminUserMapper adminUserMapper;
+    @Autowired private ModuleUserMapper userMapper;
+    @Autowired private ModuleRecyclerMapper recyclerMapper;
+    @Autowired private ModuleAppealMapper appealMapper;
+    @Autowired private ModulePointsLogMapper pointsLogMapper;
+    @Autowired private ModuleSiteMapper siteMapper;
+    @Autowired private ModuleAdminUserMapper adminUserMapper;
 
     public PageResult<User> userList(Integer page, Integer size, String keyword, String status) {
         Page<User> p = new Page<>(page, size);
