@@ -19,6 +19,10 @@ spring:
     baseline-on-migrate: true
   jackson:
     time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 10MB
 
 mybatis-plus:
   configuration:
@@ -27,6 +31,9 @@ mybatis-plus:
     banner: false
     db-config:
       id-type: auto
+
+upload:
+  path: ${UPLOAD_PATH:./uploads}
 
 app:
   jwt:

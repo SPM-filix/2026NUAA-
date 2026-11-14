@@ -115,6 +115,13 @@ public class JwtInterceptor implements HandlerInterceptor {
             throw new BizException(ErrorCode.FORBIDDEN);
         }
 
+        com.nuaa.recycle.common.LoginUser loginUser = new com.nuaa.recycle.common.LoginUser();
+        loginUser.setUserId(payload.id());
+        loginUser.setRole(payload.role().name());
+        loginUser.setTokenVersion(payload.version());
+        loginUser.setToken(header.substring(7));
+        com.nuaa.recycle.common.UserContext.set(loginUser);
+
         UserContext.set(new CurrentUser(payload.id(), payload.role()));
         return true;
     }
@@ -129,5 +136,6 @@ public class JwtInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, Exception ex) {
         UserContext.clear();
+        com.nuaa.recycle.common.UserContext.clear();
     }
 }

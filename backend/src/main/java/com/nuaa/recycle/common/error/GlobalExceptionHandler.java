@@ -21,6 +21,25 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(code.getCode(), e.getMessage()));
     }
 
+    @ExceptionHandler(com.nuaa.recycle.common.BizException.class)
+    public ResponseEntity<ApiResponse<Void>> handleModuleBiz(com.nuaa.recycle.common.BizException e) {
+        return ResponseEntity.ok(ApiResponse.error(e.getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(com.nuaa.recycle.common.UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleModuleUnauthorized(
+            com.nuaa.recycle.common.UnauthorizedException e) {
+        return ResponseEntity.status(ErrorCode.UNAUTHORIZED.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.UNAUTHORIZED.getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(com.nuaa.recycle.common.ForbiddenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleModuleForbidden(
+            com.nuaa.recycle.common.ForbiddenException e) {
+        return ResponseEntity.status(ErrorCode.FORBIDDEN.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.FORBIDDEN.getCode(), e.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();

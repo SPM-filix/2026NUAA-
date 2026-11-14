@@ -24,11 +24,11 @@ public class AdminInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (adminUserMapper.selectCount(null) > 0) {
-            return;
-        }
         if (!StringUtils.hasText(initPassword)) {
             log.warn("ADMIN_INIT_PASSWORD 未设置，跳过初始管理员创建");
+            return;
+        }
+        if (adminUserMapper.selectCount(null) > 0) {
             return;
         }
         AdminUser admin = new AdminUser();

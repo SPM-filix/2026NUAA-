@@ -2,11 +2,11 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 模块 | 后端核心：JWT 认证、RBAC、投递登记、积分兑换并发、回收员数据隔离 |
-| 负责人 | 邓裕达 |
-| 日期 | 2026-11-14 |
+| 模块 | 后端核心 + 陈益苇业务模块集成 |
+| 负责人 | 邓裕达（核心）、陈益苇（业务模块） |
+| 日期 | 2026-11-15 |
 | 依据 | `docs/api.md`、`docs/requirements/需求分析报告-v1.md` |
-| 状态 | 已通过 `mvn clean compile`、`mvn test`（22 个测试）、`mvn package`；MySQL/Flyway 运行时未验证 |
+| 状态 | 编译/单测/打包通过；禁用 Flyway 时 Spring 上下文启动验证通过；MySQL 运行时未验证 |
 
 ## 1. 已完成清单
 
@@ -56,26 +56,35 @@
 - `AdminInitializer`：`admin_user` 为空时按 `ADMIN_INIT_PASSWORD` 创建 `admin`。
 - 单元测试 5 个类（见第 5 节）。
 
-## 2. 未完成清单（交接给陈益苇）
+## 2. 模块层集成情况（陈益苇）
 
-| 范围 | 涉及的 API | 说明 |
+已合并到同一应用（保留其 `controller/service/entity/mapper` 分层）：
+
+| 范围 | 接口 | 状态 |
 | --- | --- | --- |
-| 商品管理 | PRD-01～07 | 列表/详情/新增/编辑/上下架/库存/删除 |
-| 类别与积分规则 | CAT-01～07 | 类别 CRUD、规则设置与历史 |
-| 站点维护 | SITE-01～04 | 站点 CRUD 与启停 |
-| 账号管理 | ACC-01～11 | 用户/回收员检索、禁用、审核、重置密码、积分调整、申诉处理 |
-| 统计看板 | STA-01～05 | 总量、分类占比、趋势、TOP、回收员工作台 |
-| 公告与科普 | ANN-01～07 | 管理端公告 CRUD 与列表 |
-| 文件上传 | FIL-01 | 图片上传、`upload_file` 落库、持久化目录 |
-| 用户申诉 | USER-09/10 | 用户提交与查询申诉 |
-| 用户资料修改 | USER-02 | 昵称/头像/地址修改 |
-| 商品与类别只读 | — | 核心模块只读取 `product`、`recycle_category`、`points_rule`、`site`，未实现管理端写接口 |
+| 商品管理 | PRD-01～07 | 已集成 |
+| 类别与积分规则 | CAT-01～07 | 已集成 |
+| 站点维护 | SITE-01～04 | 已集成 |
+| 公告与科普 | ANN-01～07 | 已集成 |
+| 文件上传 | FIL-01 | 已集成（本地磁盘，`/uploads` 静态映射） |
+| 统计看板 | STA-01～05 | 接口已集成，聚合逻辑为占位（返回 0/空） |
+| 账号管理 | ACC-01～11 | 已集成 |
+| 管理员申诉处理 | ACC-09/10 | 已集成 |
 
-依赖关系：
+仍需补：
 
-- 陈益苇的接口复用 `common/api`、`common/error`、`common/auth` 与 Flyway 表结构。
-- 管理员重置密码接口必须设置 `must_change_password=1` 并递增 `token_version`，核心拦截器已支持。
-- 文件上传需把 `upload_file` 表与 `uploads_data` 卷接通。
+- USER-02 用户资料修改
+- USER-09/10 用户申诉
+- STA 真实聚合 SQL（总量、分类占比、趋势、TOP、工作台）
+- 文件上传 OSS
+- 部署与 Nginx
+
+集成注意：
+
+- 模块层 Mapper 统一加 `Module` 前缀，避免与核心 Mapper 的 Bean 名冲突。
+- 模块层使用 `com.nuaa.recycle.common.R`/`PageResult`，核心使用 `ApiResponse`/`common.api.PageResult`，二者 JSON 结构一致。
+- `JwtInterceptor` 同时填充核心 `UserContext` 和模块层 `com.nuaa.recycle.common.UserContext`。
+- 陈益苇原有的 `schema.sql`、`AuthController`、`HealthController`、`JwtUtil`、`AuthInterceptor`、`WebConfig`、`MyBatisPlusConfig`、`GlobalExceptionHandler` 已删除或合并，避免重复。
 
 ## 3. 代码结构
 
@@ -93,6 +102,10 @@ backend/src/main/java/com/nuaa/recycle/
 ├── catalog/       Site、RecycleCategory、PointsRule、Product 实体与 Mapper
 ├── delivery/      DeliveryController、DeliveryService、实体/Mapper/DTO
 ├── exchange/      ExchangeController、ExchangeService、实体/Mapper/DTO
+├── controller/    模块层：账号、商品、类别、站点、公告、上传、统计
+├── service/       模块层服务
+├── entity/        模块层实体
+├── mapper/        模块层 Mapper（统一 Module 前缀）
 └── system/        HealthController
 ```
 
@@ -109,10 +122,11 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 - `V1__schema.sql`：13 张表（user、recycler、admin_user、site、recycle_category、points_rule、delivery_record、points_log、product、exchange_order、announcement、appeal、upload_file），含唯一索引、查询索引、`token_version`、`must_change_password`、`product.version`、`(user_id, idempotency_key)` 唯一约束。
 - `V2__seed.sql`：4 个类别及积分规则、1 个站点、6 个商品。
 - 初始管理员：设置 `ADMIN_INIT_PASSWORD` 后首次启动自动创建 `admin`，不把密码写进 SQL。
+- 陈益苇原有的 `db/schema.sql` 已删除，建表统一由 Flyway 管理。
 
 ## 5. 测试现状
 
-已写单元测试（不依赖数据库），2026-11-14 全部通过（22 个）：
+已写单元测试（不依赖数据库），2026-11-15 全部通过（22 个）：
 
 - `PointsCalculatorTest`：四舍五入、最低 1 分、边界。
 - `RevokeWindowTest`：299/300/301 秒。
@@ -145,15 +159,17 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn spring-b
 ## 7. 与契约的差异/说明
 
 1. **幂等键永久唯一**：`uk_user_idem` 不会在 24 小时后释放，比契约的 24 小时更严格；同一 key 永不重复成交。若必须支持 24 小时后复用，需要增加清理任务或分离幂等表。
-2. **管理员重置密码接口未实现**（归陈益苇）；核心只实现 `must_change_password` 的校验与改密清除。
-3. **文件上传未实现**（归陈益苇）；`upload_file` 表已建好，`uploads_data` 卷已在 compose 中预留。
-4. **统计、商品、类别、站点、账号、公告、申诉**未实现（归陈益苇）。
-5. 未引入 Redis；并发控制依赖 MySQL 条件更新与乐观锁，符合当前规模。
+2. **管理员重置密码已集成**：模块层 `AccountController` 设置 `must_change_password` 并递增 `token_version`，核心拦截器负责强制改密。
+3. **文件上传已集成**：模块层使用本地磁盘与 `/uploads` 静态映射；OSS 未实现。
+4. **统计接口为占位**：`StatsService` 目前返回 0/空列表，需补真实聚合 SQL。
+5. **两套模型并存**：核心使用 `auth/catalog/delivery/exchange` 分包，模块层使用 `controller/service/entity/mapper`；新增功能时应沿用所属层，避免再建同名 Mapper。
+6. 未引入 Redis；并发控制依赖 MySQL 条件更新与乐观锁，符合当前规模。
 
 ## 8. 已知风险与 TODO
 
-- 已通过编译、单元测试与打包；未在 MySQL 上验证 Flyway 脚本与 SQL 方言；CHECK 约束需 MySQL 8.0.16+。
+- 已通过编译、单元测试、打包；已用“禁用 Flyway + 不连接数据库”验证 Spring 上下文可启动，未在 MySQL 上验证 Flyway 脚本与 SQL 方言；CHECK 约束需 MySQL 8.0.16+。
 - 运行时验证（注册/投递/兑换/核销）需先安装 Docker 并启动 MySQL。
+- `StatsService` 真实聚合、用户申诉、用户资料修改、OSS 上传仍待补。新增 Mapper 时注意不要与同名接口冲突（模块层已统一 `Module` 前缀）。
 - JWT 拦截器抛出的异常依赖 `@RestControllerAdvice` 处理；若实际运行中未被捕获，需要在 `preHandle` 内直接写响应或增加 `HandlerExceptionResolver`。
 - `ADMIN_INIT_PASSWORD` 尚未写入本地 `.env`，启动前需补充。
 - 阶段③必须补并发测试，单元测试无法证明 MySQL 行锁行为。
