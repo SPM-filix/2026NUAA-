@@ -4,18 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。目录骨架已建好，但**仍无源代码、构建脚本和可运行的测试**：
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
 - [协作须知.md](协作须知.md) — 分支、commit、PR、评审与接口协作的团队约定
-- `backend/`、`user-web/`、`admin-web/` — 三端源码目录，目前只有 README
+- `backend/` — 后端源码（Spring Boot 3 + JDK 21 + Maven），陈益苇已完成商品/类别/站点/公告/文件上传/统计/账号管理模块
+- `user-web/`、`admin-web/` — 前端源码目录
 - `docs/` — 阶段①需求与设计、接口契约 [docs/api.md](docs/api.md)、阶段③④报告
 - `mocks/` — 阶段② Mock 数据
 - `tests/` — Postman 集合与系统测试用例
 - `deploy/` — 阶段④部署配置
 
-因此当前**没有**可运行的 build / lint / test 命令。脚手架落地后在此补充实际命令，不要保留推测的命令。
+后端已有可编译的 Maven 项目：`backend/pom.xml` 及完整源码。编译命令见 [backend/README.md](backend/README.md)。
 
 ## 技术选型（2026-11-12 确定）
 
