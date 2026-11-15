@@ -38,6 +38,7 @@ logs/
 uploads/
 coverage/
 *.lcov
+.playwright-mcp/
 
 # 数据库备份
 *.dump

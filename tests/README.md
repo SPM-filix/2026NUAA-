@@ -2,7 +2,8 @@
 
 | 层次 | 位置 | 负责人 | 说明 |
 | --- | --- | --- | --- |
-| 单元测试 | 各模块内部（后端 `src/test/`，前端模块内） | 模块负责人 | 随脚手架落地后创建 |
+| 单元测试 | 后端 `backend/src/test/`（37 个） | 模块负责人 | `mvn test` |
+| 冒烟脚本 | [smoke/](smoke/) | 邓裕达 | Node 脚本，覆盖主流程与越权 |
 | 接口测试 | [postman/](postman/) | 陈益苇 | 全量接口、冒烟、联调 |
 | 系统测试用例 | [cases/](cases/) | 陈益苇 | 越权、边界值、并发、主流程 |
 
@@ -15,4 +16,18 @@
 
 ## 运行方式
 
-脚手架落地后在此补充命令（如 `mvn test`、`npm run test`）。当前无源码，无需运行。
+后端单元测试：
+
+```bash
+cd backend
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
+```
+
+冒烟与并发（后端已启动、Flyway 已建表，Node 18+）：
+
+```bash
+ADMIN_INIT_PASSWORD=<启动后端时设置的管理员初始密码> node tests/smoke/smoke-test.mjs
+ADMIN_INIT_PASSWORD=<同上> node tests/smoke/concurrency-test.mjs
+```
+
+脚本默认请求 `http://127.0.0.1:8080`，可用 `SMOKE_BASE` 覆盖。每次运行会注册新的用户与回收员，重复运行不冲突；并发脚本需要一件库存为 1 的在售商品。
