@@ -3,6 +3,7 @@ package com.nuaa.recycle.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.nuaa.recycle.common.BizException;
+import com.nuaa.recycle.dto.CategoryResponse;
 import com.nuaa.recycle.entity.PointsRule;
 import com.nuaa.recycle.entity.RecycleCategory;
 import com.nuaa.recycle.mapper.ModuleDeliveryRecordMapper;
@@ -24,14 +25,27 @@ public class CategoryService {
     private ModulePointsRuleMapper pointsRuleMapper;
     @Autowired
     private ModuleDeliveryRecordMapper deliveryRecordMapper;
+    @Autowired
+    private com.nuaa.recycle.catalog.mapper.PointsRuleMapper currentRuleMapper;
 
-    public List<RecycleCategory> listWithRules() {
-        return categoryMapper.selectListWithCurrentRule();
-    }
-
-    public List<RecycleCategory> listEnabled() {
-        return categoryMapper.selectList(
-                new LambdaQueryWrapper<RecycleCategory>().eq(RecycleCategory::getStatus, "ENABLED").orderByAsc(RecycleCategory::getSort));
+    /**
+     * API-CAT-01：返回 categoryId 与当前生效系数。
+     * 自定义 @Select 走 MyBatis-Plus 实体映射时会忽略 exist=false 字段，
+     * 因此这里按类别逐个取当前规则，类别数量很小（个位数）。
+     */
+    public List<CategoryResponse> listWithRules(boolean enabledOnly) {
+        List<RecycleCategory> categories = categoryMapper.selectList(
+                new LambdaQueryWrapper<RecycleCategory>()
+                        .eq(enabledOnly, RecycleCategory::getStatus, "ENABLED")
+                        .orderByAsc(RecycleCategory::getSort)
+                        .orderByAsc(RecycleCategory::getId));
+        return categories.stream().map(category -> {
+            com.nuaa.recycle.catalog.entity.PointsRule rule = currentRuleMapper.findCurrent(category.getId());
+            return new CategoryResponse(category.getId(), category.getName(), category.getCode(),
+                    category.getUnit(), category.getIconUrl(), category.getSort(), category.getStatus(),
+                    rule == null ? null : rule.getPointsPerKg(),
+                    rule == null ? null : rule.getEffectiveFrom());
+        }).toList();
     }
 
     @Transactional

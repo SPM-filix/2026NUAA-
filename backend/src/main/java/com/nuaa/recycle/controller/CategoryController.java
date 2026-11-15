@@ -24,12 +24,12 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/api/categories")
-    public R<List<RecycleCategory>> list(@RequestParam(required = false, defaultValue = "true") boolean enabledOnly) {
-        if (enabledOnly) {
-            return R.ok(categoryService.listEnabled());
+    public R<List<com.nuaa.recycle.dto.CategoryResponse>> list(
+            @RequestParam(required = false, defaultValue = "true") boolean enabledOnly) {
+        if (!enabledOnly) {
+            checkAdmin();
         }
-        checkAdmin();
-        return R.ok(categoryService.listWithRules());
+        return R.ok(categoryService.listWithRules(enabledOnly));
     }
 
     @PostMapping("/api/admin/categories")
