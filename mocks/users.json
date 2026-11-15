@@ -1,0 +1,71 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 6,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "userId": 1,
+        "userCode": "100001",
+        "phone": "13800001234",
+        "nickname": "小魏",
+        "avatarUrl": null,
+        "pointsBalance": 320,
+        "status": "ACTIVE",
+        "createdAt": "2026-09-12T10:24:00+08:00"
+      },
+      {
+        "userId": 2,
+        "userCode": "100002",
+        "phone": "13800002345",
+        "nickname": "林小满",
+        "avatarUrl": null,
+        "pointsBalance": 88,
+        "status": "ACTIVE",
+        "createdAt": "2026-09-18T14:05:00+08:00"
+      },
+      {
+        "userId": 3,
+        "userCode": "100003",
+        "phone": "13800003456",
+        "nickname": "陈一苇",
+        "avatarUrl": null,
+        "pointsBalance": 0,
+        "status": "ACTIVE",
+        "createdAt": "2026-09-25T09:41:00+08:00"
+      },
+      {
+        "userId": 4,
+        "userCode": "100004",
+        "phone": "13800004567",
+        "nickname": "赵小舟",
+        "avatarUrl": null,
+        "pointsBalance": 1560,
+        "status": "ACTIVE",
+        "createdAt": "2026-08-30T16:12:00+08:00"
+      },
+      {
+        "userId": 5,
+        "userCode": "100005",
+        "phone": "13800005678",
+        "nickname": "周雨",
+        "avatarUrl": null,
+        "pointsBalance": 45,
+        "status": "DISABLED",
+        "createdAt": "2026-10-02T11:30:00+08:00"
+      },
+      {
+        "userId": 6,
+        "userCode": "100006",
+        "phone": "13800006789",
+        "nickname": "吴桐",
+        "avatarUrl": null,
+        "pointsBalance": 640,
+        "status": "ACTIVE",
+        "createdAt": "2026-10-11T08:55:00+08:00"
+      }
+    ]
+  }
+}

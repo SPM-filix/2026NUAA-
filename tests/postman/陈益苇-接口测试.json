@@ -1,0 +1,635 @@
+{
+  "info": {
+    "_postman_id": "nuaa-recycle-chenyiwei",
+    "name": "陈益苇-后端接口测试集合",
+    "description": "商品、类别规则、账号、统计、上传、公告模块接口测试 — 陈益苇负责",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. 系统健康检查",
+      "item": [
+        {
+          "name": "API-SYS-01 健康检查",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                "pm.test('状态 UP', () => { const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.status).to.eq('UP'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "2. 认证模块（前置登录）",
+      "item": [
+        {
+          "name": "管理员登录",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"username\": \"admin\", \"password\": \"admin12345\"}"},
+            "url": {"raw": "{{baseUrl}}/api/auth/admins/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "admins", "login"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('登录成功', () => pm.response.to.have.status(200));",
+                "const j = pm.response.json();",
+                "pm.environment.set('adminToken', j.data.token);"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "3. 商品模块 (PRD) — 陈益苇",
+      "item": [
+        {
+          "name": "API-PRD-03 新增商品",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"name\": \"环保布袋\", \"description\": \"可重复使用的环保购物袋\", \"pointsPrice\": 100, \"stock\": 50, \"spec\": \"40x35cm\", \"exchangeNotice\": \"请至站点领取\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/products", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('新增商品成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.productId).to.be.a('number'); pm.environment.set('productId', j.data.productId); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-01 商品列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/products?page=1&size=10&sort=created_desc", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [{"key": "page", "value": "1"}, {"key": "size", "value": "10"}, {"key": "sort", "value": "created_desc"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('获取商品列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.list).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-02 商品详情",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["api", "products", "{{productId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('商品详情成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.name).to.eq('环保布袋'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-04 编辑商品",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"name\": \"环保布袋-升级版\", \"description\": \"加厚可重复使用的环保购物袋\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products", "{{productId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('编辑商品成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.name).to.eq('环保布袋-升级版'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-05 上下架",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"status\": \"OFF\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/products/{{productId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products", "{{productId}}", "status"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('下架成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.status).to.eq('OFF'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-06 调整库存",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"mode\": \"INCR\", \"value\": 10, \"reason\": \"双十一补货\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products", "{{productId}}", "stock"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('库存调整成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.stock).to.eq(60); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-PRD-07 删除商品",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "products", "{{productId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('删除商品成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "4. 类别与站点模块 (CAT/SITE) — 陈益苇",
+      "item": [
+        {
+          "name": "API-CAT-02 新增类别",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"name\": \"废纸\", \"code\": \"PAPER\", \"pointsPerKg\": 10, \"sort\": 1}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/categories", "host": ["{{baseUrl}}"], "path": ["api", "admin", "categories"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('新增类别成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.environment.set('categoryId', j.data.categoryId); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-CAT-01 类别列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/categories?enabledOnly=true", "host": ["{{baseUrl}}"], "path": ["api", "categories"], "query": [{"key": "enabledOnly", "value": "true"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('类别列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-CAT-03 编辑类别",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"name\": \"废旧纸张\", \"sort\": 2}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "categories", "{{categoryId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('编辑类别成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.name).to.eq('废旧纸张'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-CAT-06 设置积分规则",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"pointsPerKg\": 15}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/categories/{{categoryId}}/rule", "host": ["{{baseUrl}}"], "path": ["api", "admin", "categories", "{{categoryId}}", "rule"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('设置规则成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.pointsPerKg).to.eq(15); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-SITE-02 新增站点",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"name\": \"一号回收站\", \"address\": \"学生公寓A区东侧\", \"openTime\": \"08:00-20:00\", \"manager\": \"张师傅\", \"phone\": \"13800001111\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/sites", "host": ["{{baseUrl}}"], "path": ["api", "admin", "sites"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('新增站点成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.environment.set('siteId', j.data.siteId); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-SITE-01 站点列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/sites?enabledOnly=true", "host": ["{{baseUrl}}"], "path": ["api", "sites"], "query": [{"key": "enabledOnly", "value": "true"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('站点列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-SITE-04 停用站点",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"status\": \"DISABLED\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/sites/{{siteId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "admin", "sites", "{{siteId}}", "status"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('停用站点成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.status).to.eq('DISABLED'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "5. 公告模块 (ANN) — 陈益苇",
+      "item": [
+        {
+          "name": "API-ANN-03 新增公告",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"title\": \"关于垃圾分类的通知\", \"type\": \"NOTICE\", \"content\": \"请各位同学积极参与垃圾分类，保护环境从我做起。\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/announcements", "host": ["{{baseUrl}}"], "path": ["api", "admin", "announcements"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('新增公告成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.environment.set('announcementId', j.data.announcementId); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ANN-01 公告列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/announcements?page=1&size=10", "host": ["{{baseUrl}}"], "path": ["api", "announcements"], "query": [{"key": "page", "value": "1"}, {"key": "size", "value": "10"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('公告列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.list).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ANN-02 公告详情",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/announcements/{{announcementId}}", "host": ["{{baseUrl}}"], "path": ["api", "announcements", "{{announcementId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('公告详情成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.title).to.eq('关于垃圾分类的通知'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ANN-05 下线公告",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"status\": \"OFFLINE\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/announcements/{{announcementId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "admin", "announcements", "{{announcementId}}", "status"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('下线公告成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.status).to.eq('OFFLINE'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ANN-06 删除公告",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/announcements/{{announcementId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "announcements", "{{announcementId}}"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('删除公告成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "6. 文件上传模块 (FIL) — 陈益苇",
+      "item": [
+        {
+          "name": "API-FIL-01 上传商品图片",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": "/tmp/test.png"}, {"key": "scene", "value": "PRODUCT", "type": "text"}]},
+            "url": {"raw": "{{baseUrl}}/api/files", "host": ["{{baseUrl}}"], "path": ["api", "files"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('上传成功或文件不存在', () => { const code = pm.response.code; pm.expect(code).to.be.oneOf([200, 4001, 4002]); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "7. 统计模块 (STA) — 陈益苇",
+      "item": [
+        {
+          "name": "API-STA-01 总量看板",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/stats/overview", "host": ["{{baseUrl}}"], "path": ["api", "admin", "stats", "overview"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('总量看板成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data).to.have.property('userCount'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-STA-03 趋势统计",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/stats/trend?days=7", "host": ["{{baseUrl}}"], "path": ["api", "admin", "stats", "trend"], "query": [{"key": "days", "value": "7"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('趋势统计成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "8. 账号管理模块 (ACC) — 陈益苇",
+      "item": [
+        {
+          "name": "API-ACC-01 用户列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/accounts/users?page=1&size=20", "host": ["{{baseUrl}}"], "path": ["api", "admin", "accounts", "users"], "query": [{"key": "page", "value": "1"}, {"key": "size", "value": "20"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('用户列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.list).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ACC-02 禁用用户",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"status\": \"DISABLED\", \"reason\": \"涉嫌违规操作\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/accounts/users/1/status", "host": ["{{baseUrl}}"], "path": ["api", "admin", "accounts", "users", "1", "status"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('禁用用户成功或用户不存在', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.be.oneOf([0, 1005]); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ACC-04 回收员列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/accounts/recyclers?page=1&size=20", "host": ["{{baseUrl}}"], "path": ["api", "admin", "accounts", "recyclers"], "query": [{"key": "page", "value": "1"}, {"key": "size", "value": "20"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('回收员列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.list).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ACC-08 人工调整积分",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"userId\": 1, \"change\": 100, \"reason\": \"系统奖励测试\"}"},
+            "url": {"raw": "{{baseUrl}}/api/admin/points/adjust", "host": ["{{baseUrl}}"], "path": ["api", "admin", "points", "adjust"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('调整积分成功或用户不存在', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.be.oneOf([0, 1005]); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        },
+        {
+          "name": "API-ACC-09 申诉列表",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/appeals?page=1&size=20", "host": ["{{baseUrl}}"], "path": ["api", "admin", "appeals"], "query": [{"key": "page", "value": "1"}, {"key": "size", "value": "20"}]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('申诉列表成功', () => { pm.response.to.have.status(200); const j = pm.response.json(); pm.expect(j.code).to.eq(0); pm.expect(j.data.list).to.be.an('array'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "9. 越权测试",
+      "item": [
+        {
+          "name": "用户Token调管理员接口 → 403",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/admin/accounts/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "accounts", "users"]}
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('越权返回403', () => pm.response.to.have.status(403));"
+              ],
+              "type": "text/javascript"
+            }
+          }]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080", "type": "string"},
+    {"key": "adminToken", "value": "", "type": "string"},
+    {"key": "userToken", "value": "", "type": "string"},
+    {"key": "productId", "value": "", "type": "string"},
+    {"key": "categoryId", "value": "", "type": "string"},
+    {"key": "siteId", "value": "", "type": "string"},
+    {"key": "announcementId", "value": "", "type": "string"}
+  ]
+}

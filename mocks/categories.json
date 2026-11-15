@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "categoryId": 1,
+      "name": "废纸",
+      "code": "PAPER",
+      "unit": "kg",
+      "iconUrl": null,
+      "sort": 1,
+      "status": "ENABLED",
+      "pointsPerKg": 10,
+      "ruleEffectiveFrom": "2026-09-01T00:00:00+08:00"
+    },
+    {
+      "categoryId": 2,
+      "name": "塑料",
+      "code": "PLASTIC",
+      "unit": "kg",
+      "iconUrl": null,
+      "sort": 2,
+      "status": "ENABLED",
+      "pointsPerKg": 15,
+      "ruleEffectiveFrom": "2026-09-01T00:00:00+08:00"
+    },
+    {
+      "categoryId": 3,
+      "name": "金属",
+      "code": "METAL",
+      "unit": "kg",
+      "iconUrl": null,
+      "sort": 3,
+      "status": "ENABLED",
+      "pointsPerKg": 20,
+      "ruleEffectiveFrom": "2026-10-01T00:00:00+08:00"
+    },
+    {
+      "categoryId": 4,
+      "name": "旧衣物",
+      "code": "CLOTH",
+      "unit": "kg",
+      "iconUrl": null,
+      "sort": 4,
+      "status": "ENABLED",
+      "pointsPerKg": 8,
+      "ruleEffectiveFrom": "2026-09-01T00:00:00+08:00"
+    }
+  ]
+}

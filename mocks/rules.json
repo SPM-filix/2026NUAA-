@@ -1,0 +1,62 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "ruleId": 1,
+      "categoryId": 3,
+      "pointsPerKg": 18,
+      "effectiveFrom": "2026-06-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-05-30T15:00:00+08:00"
+    },
+    {
+      "ruleId": 2,
+      "categoryId": 3,
+      "pointsPerKg": 20,
+      "effectiveFrom": "2026-10-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-09-28T10:20:00+08:00"
+    },
+    {
+      "ruleId": 3,
+      "categoryId": 2,
+      "pointsPerKg": 12,
+      "effectiveFrom": "2026-06-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-05-30T15:00:00+08:00"
+    },
+    {
+      "ruleId": 4,
+      "categoryId": 2,
+      "pointsPerKg": 15,
+      "effectiveFrom": "2026-09-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-08-28T09:40:00+08:00"
+    },
+    {
+      "ruleId": 5,
+      "categoryId": 1,
+      "pointsPerKg": 8,
+      "effectiveFrom": "2026-06-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-05-30T15:00:00+08:00"
+    },
+    {
+      "ruleId": 6,
+      "categoryId": 1,
+      "pointsPerKg": 10,
+      "effectiveFrom": "2026-09-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-08-28T09:40:00+08:00"
+    },
+    {
+      "ruleId": 7,
+      "categoryId": 4,
+      "pointsPerKg": 8,
+      "effectiveFrom": "2026-09-01T00:00:00+08:00",
+      "createdBy": "admin",
+      "createdAt": "2026-08-28T09:40:00+08:00"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 6,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "recyclerId": 1,
+        "name": "刘洋",
+        "phone": "13900001001",
+        "employeeNo": "R1001",
+        "siteId": 1,
+        "siteName": "东山回收站",
+        "status": "APPROVED",
+        "applyReason": "在东山回收站工作三年，熟悉称重与分类流程。",
+        "rejectReason": null,
+        "createdAt": "2026-08-20T09:00:00+08:00",
+        "approvedAt": "2026-08-21T10:20:00+08:00"
+      },
+      {
+        "recyclerId": 2,
+        "name": "孙倩",
+        "phone": "13900001002",
+        "employeeNo": "R1002",
+        "siteId": 2,
+        "siteName": "西区环保驿站",
+        "status": "APPROVED",
+        "applyReason": "环保驿站全职员工，希望使用系统登记回收数据。",
+        "rejectReason": null,
+        "createdAt": "2026-08-22T13:40:00+08:00",
+        "approvedAt": "2026-08-23T09:10:00+08:00"
+      },
+      {
+        "recyclerId": 3,
+        "name": "何伟",
+        "phone": "13900001003",
+        "employeeNo": "R1003",
+        "siteId": 1,
+        "siteName": "东山回收站",
+        "status": "PENDING",
+        "applyReason": "新入职东山回收站，工号 R1003，申请开通投递登记权限。",
+        "rejectReason": null,
+        "createdAt": "2026-11-12T15:36:00+08:00",
+        "approvedAt": null
+      },
+      {
+        "recyclerId": 4,
+        "name": "马小军",
+        "phone": "13900001004",
+        "employeeNo": "R1004",
+        "siteId": 3,
+        "siteName": "翠屏山回收点",
+        "status": "REJECTED",
+        "applyReason": "想兼职参与翠屏山回收点的登记工作。",
+        "rejectReason": "工号信息与站点备案不一致，请携带工作证明重新提交。",
+        "createdAt": "2026-11-05T10:12:00+08:00",
+        "approvedAt": null
+      },
+      {
+        "recyclerId": 5,
+        "name": "高蕾",
+        "phone": "13900001005",
+        "employeeNo": "R1005",
+        "siteId": 2,
+        "siteName": "西区环保驿站",
+        "status": "APPROVED",
+        "applyReason": "负责西区环保驿站的日常回收登记。",
+        "rejectReason": null,
+        "createdAt": "2026-09-01T08:30:00+08:00",
+        "approvedAt": "2026-09-02T11:00:00+08:00"
+      },
+      {
+        "recyclerId": 6,
+        "name": "郑凯",
+        "phone": "13900001006",
+        "employeeNo": "R1006",
+        "siteId": 1,
+        "siteName": "东山回收站",
+        "status": "DISABLED",
+        "applyReason": "东山回收站临时登记员。",
+        "rejectReason": null,
+        "createdAt": "2026-09-10T17:20:00+08:00",
+        "approvedAt": "2026-09-11T09:00:00+08:00"
+      }
+    ]
+  }
+}

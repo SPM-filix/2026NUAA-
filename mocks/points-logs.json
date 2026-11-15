@@ -1,0 +1,110 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total": 9,
+    "page": 1,
+    "size": 20,
+    "list": [
+      {
+        "logId": 1,
+        "userId": 1,
+        "type": "INCOME",
+        "change": 24,
+        "balanceAfter": 320,
+        "bizType": "DELIVERY",
+        "bizNo": "D20261113001",
+        "remark": "废纸 2.40 kg",
+        "createdAt": "2026-11-13T09:15:00+08:00"
+      },
+      {
+        "logId": 2,
+        "userId": 2,
+        "type": "INCOME",
+        "change": 13,
+        "balanceAfter": 88,
+        "bizType": "DELIVERY",
+        "bizNo": "D20261113002",
+        "remark": "塑料 0.85 kg",
+        "createdAt": "2026-11-13T09:42:00+08:00"
+      },
+      {
+        "logId": 3,
+        "userId": 1,
+        "type": "EXPENSE",
+        "change": -1200,
+        "balanceAfter": 320,
+        "bizType": "EXCHANGE",
+        "bizNo": "E202611120005",
+        "remark": "兑换不锈钢保温饭盒",
+        "createdAt": "2026-11-12T09:20:00+08:00"
+      },
+      {
+        "logId": 4,
+        "userId": 3,
+        "type": "REFUND",
+        "change": 180,
+        "balanceAfter": 180,
+        "bizType": "REFUND",
+        "bizNo": "E202611120006",
+        "remark": "订单取消退回积分",
+        "createdAt": "2026-11-12T15:00:00+08:00"
+      },
+      {
+        "logId": 5,
+        "userId": 4,
+        "type": "REVOKE",
+        "change": -88,
+        "balanceAfter": 1560,
+        "bizType": "REVOKE",
+        "bizNo": "D20261110001",
+        "remark": "重量录入有误，已重新称重",
+        "createdAt": "2026-11-10T16:30:00+08:00"
+      },
+      {
+        "logId": 6,
+        "userId": 4,
+        "type": "INCOME",
+        "change": 246,
+        "balanceAfter": 1648,
+        "bizType": "DELIVERY",
+        "bizNo": "D20261112002",
+        "remark": "金属 12.30 kg",
+        "createdAt": "2026-11-12T15:05:00+08:00"
+      },
+      {
+        "logId": 7,
+        "userId": 5,
+        "type": "ADJUST",
+        "change": -50,
+        "balanceAfter": 45,
+        "bizType": "ADMIN_ADJUST",
+        "bizNo": null,
+        "remark": "违规积分撤销：重复投递",
+        "createdAt": "2026-11-08T10:20:00+08:00"
+      },
+      {
+        "logId": 8,
+        "userId": 6,
+        "type": "INCOME",
+        "change": 24,
+        "balanceAfter": 640,
+        "bizType": "DELIVERY",
+        "bizNo": "D20261113005",
+        "remark": "旧衣物 3.00 kg",
+        "createdAt": "2026-11-13T11:10:00+08:00"
+      },
+      {
+        "logId": 9,
+        "userId": 2,
+        "type": "EXPENSE",
+        "change": -180,
+        "balanceAfter": 88,
+        "bizType": "EXCHANGE",
+        "bizNo": "E202611110003",
+        "remark": "兑换再生纸笔记本套装",
+        "createdAt": "2026-11-11T10:30:00+08:00"
+      }
+    ]
+  }
+}

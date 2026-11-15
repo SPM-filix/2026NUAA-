@@ -1,9 +1,12 @@
 # MySQL 初始化脚本
 
+> 表结构现由后端 Flyway 管理（`backend/src/main/resources/db/migration/`），本目录不再放 schema。
+> 应用启动时 Flyway 自动执行 V1 建表、V2 种子数据。
+
 容器**首次创建数据卷**时，会按文件名顺序执行本目录下的 `.sql`、`.sh`、`.sql.gz`。
 
-- `01-schema.sql`：表结构，阶段①数据库设计完成后放入
-- `02-seed.sql`：基础数据（垃圾类别、积分规则、初始管理员账号等）
+- 如需额外的容器级初始化脚本，可放这里；建表不要放这里
+- `backend` 的 `AdminInitializer` 会在 `admin_user` 为空时用 `ADMIN_INIT_PASSWORD` 创建初始管理员
 
 ## 注意
 
