@@ -41,9 +41,10 @@
 
 验证结果（2026-11-15）：
 
-- `mvn clean compile`、`mvn test`（37 个测试）、`mvn package` 均通过
+- `mvn clean compile`、`mvn test`（39 个测试）、`mvn package` 均通过
 - MySQL 8.0 实库启动，Flyway `V1`/`V2` 成功，14 张表（含 `flyway_schema_history`）
-- `tests/smoke/smoke-test.mjs` 35 项断言全部通过；`concurrency-test.mjs` 库存 1 时 20 并发无超卖、积分只扣一次
+- `tests/smoke/smoke-test.mjs` 35 项断言全部通过；`tests/load/high-concurrency-test.mjs` 在生产环境通过 15 项并发断言（50 并发无超卖、幂等只成交一次、核销一次性）
+- 已在阿里云 ECS 用 Docker Compose 部署上线：<http://8.136.245.40/>
 - 关闭 Flyway、不连接数据库时 Spring 上下文也可启动（无 Bean/路由冲突）
 
 详细交接见 [docs/HANDOVER.md](docs/HANDOVER.md)。

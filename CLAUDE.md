@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。三端源码均已落地：后端通过编译、37 个单元测试和打包，MySQL 8.0 实库与主流程冒烟已验证；用户端与管理端页面完整，Mock 与真实后端两种模式均验证通过，本机已安装依赖：
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。三端源码均已落地并部署上线：后端通过编译、39 个单元测试和打包，MySQL 8.0 实库、主流程冒烟与高并发测试已验证；用户端与管理端页面完整，Mock 与真实后端两种模式均验证通过；线上入口见 [README.md](README.md)。
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
@@ -25,7 +25,7 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTe
 JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
 ```
 
-已验证：`mvn clean compile`、`mvn test`（37 个测试）、`mvn package` 均通过；MySQL 8.0 实库启动后 Flyway `V1`/`V2` 建表成功，`tests/smoke/` 冒烟 35 项与库存并发用例通过；禁用 Flyway、不连接数据库时 Spring 上下文也可正常启动。Docker Compose 路径因 WSL2 未启用暂未验证。
+已验证：`mvn clean compile`、`mvn test`（39 个测试）、`mvn package` 均通过；MySQL 8.0 实库启动后 Flyway `V1`/`V2` 建表成功，`tests/smoke/` 冒烟 35 项、`tests/load/` 生产并发 15 项断言通过；Docker Compose 已在阿里云 ECS 部署上线（<http://8.136.245.40/>）。
 
 前端构建（两端各自执行，依赖已安装）：
 

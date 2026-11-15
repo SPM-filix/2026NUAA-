@@ -128,7 +128,7 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 
 ## 5. 测试现状
 
-已写单元测试（不依赖数据库），2026-11-15 全部通过（37 个）：
+已写单元测试（不依赖数据库），2026-11-15 全部通过（39 个）：
 
 - `PointsCalculatorTest`：四舍五入、最低 1 分、边界。
 - `RevokeWindowTest`：299/300/301 秒。
@@ -139,26 +139,29 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 - `AppealServiceTest`：本人流水可申诉、他人流水 1003、标的不存在 1005、列表回填 targetNo。
 - `UserServiceTest`：修改资料不动手机号/积分。
 - `StatsServiceTest`：总览聚合、分类占比、日期区间校验、趋势补零、TOP 昵称脱敏、工作台与排名。
+- `EntityJsonTest`：实体 id 按契约字段名序列化（`productId`、`appealId`）。
 
 已在 MySQL 8.0 实库完成（2026-11-15）：
 
 - Flyway `V1`/`V2` 建表成功，14 张表（含 `flyway_schema_history`）。
 - `tests/smoke/smoke-test.mjs`：35 项断言全部通过（认证、投递、兑换幂等、核销、统计、越权）。
 - `tests/smoke/concurrency-test.mjs`：库存 1 时 20 并发，1 笔成功、14 笔 3002、5 笔 3001，库存归零未超卖，积分只扣一次。
+- `tests/load/high-concurrency-test.mjs`：生产环境完成 50 并发抢库存、同幂等键 10 并发、同核销码 10 并发、余额不足 5 并发，15 项断言通过，详见 `docs/reports/高并发测试报告-阶段③.md`。
 - 发现并修复缺陷 DEF-001：库存被并发扣完后错误返回 `3013`，已改为 `3002` 并补 2 个单元测试。
+- 已用 Docker Compose 部署到阿里云 ECS：<http://8.136.245.40/>，管理端 `/admin/`。
 
 未做/待做：
 
 - 5 分钟撤销窗口、管理员授权撤销、取消退分、申诉、上传的接口级用例。
-- 余额 100 兑换 60 分商品 10 并发、同一幂等键连发 5 次、并发撤销同一流水。
-- Docker Compose 方式启动（Docker Desktop 已安装，但本机 WSL2 未启用，需管理员安装并重启）。
+- 并发撤销同一流水、持续压力测试、多实例部署。
+- 本机 Docker Desktop 仍受 WSL2 限制；服务器端 Compose 已验证。
 
 ## 6. 环境与启动
 
 - JDK 21.0.13、Maven 3.9.16 已安装；`JAVA_HOME` / `MAVEN_HOME` 已设置。
 - 当前 Claude 会话可能仍继承 Java 8 PATH，执行 Maven 时显式设置 `JAVA_HOME`。
 - 环境变量：`DB_HOST`（默认 `db`）、`DB_PORT`、`DB_NAME`、`DB_USER`、`DB_PASSWORD`、`JWT_SECRET`（≥32 字节）、`JWT_EXPIRE_MINUTES`、`ADMIN_INIT_PASSWORD`。
-- Docker Desktop 4.99.0 已安装，但本机 WSL2 未启用（`wsl --install` 需要管理员权限并重启），因此 Compose 路径未验证；验证时改用本机 MySQL 8.0.46 临时实例（端口 3307）。WSL2 就绪后：
+- 服务器端已用 Docker Compose 部署验证（阿里云 ECS，<http://8.136.245.40/>）；本机 Docker Desktop 仍受 WSL2 限制（`wsl --install` 需管理员权限并重启）。本地容器验证的命令：
 
 ```bash
 docker compose up -d

@@ -9,10 +9,18 @@
 | ① | 功能结构图 | [requirements/功能结构图-v1.md](requirements/功能结构图-v1.md) | 魏鸿 | 评审稿 |
 | ① | 页面清单与交互说明 | [requirements/页面清单与交互说明-v1.md](requirements/页面清单与交互说明-v1.md) | 魏鸿（汇总） | 初稿，待前端确认 |
 | ① | 详细设计说明书、E-R 图、数据库设计 | [design/](design/) | 魏鸿 | 待编写 |
-| ① | 接口契约 | [api.md](api.md) | 魏鸿起草，邓裕达 / 陈益苇确认 | 草案 v0.1 |
-| ③ | 系统测试报告 | [reports/](reports/) | 陈益苇 | 待编写 |
+| ① | 接口契约 | [api.md](api.md) | 魏鸿起草，邓裕达 / 陈益苇确认 | v0.1，2026-11-12 决策已回写 |
+| ② | 后端核心模块交接文档 | [../backend/docs/HANDOVER.md](../backend/docs/HANDOVER.md) | 邓裕达 | 已完成（含测试与环境说明） |
+| ③ | 系统测试报告 | [reports/系统测试报告-阶段③.md](reports/系统测试报告-阶段③.md) | 陈益苇（邓裕达整理） | 已完成（2026-11-15） |
+| ③ | 高并发测试报告 | [reports/高并发测试报告-阶段③.md](reports/高并发测试报告-阶段③.md) | 邓裕达 | 已完成（生产环境） |
+| ④ | 部署手册 | [../deploy/README.md](../deploy/README.md) | 陈益苇 | 已完成（Docker Compose 单机） |
 | ④ | 开发报告、答辩 PPT | [reports/](reports/) | 魏鸿 | 待编写 |
-| ② | 后端核心模块交接文档 | [../backend/docs/HANDOVER.md](../backend/docs/HANDOVER.md) | 邓裕达 | 初稿 |
+
+## 其他索引
+
+- 项目总览与快速开始：[../README.md](../README.md)
+- 测试资产与运行方式：[../tests/README.md](../tests/README.md)
+- 部署与运维：[../deploy/README.md](../deploy/README.md)
 
 ## 文档约定
 
