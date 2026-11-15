@@ -32,27 +32,45 @@ services:
     networks:
       - recycle-net
 
-  # 后端服务：脚手架落地后取消注释，并按实际构建方式调整。
-  # backend:
-  #   build: ./backend
-  #   container_name: nuaa-recycle-backend
-  #   restart: unless-stopped
-  #   environment:
-  #     DB_HOST: db
-  #     DB_PORT: 3306
-  #     DB_NAME: ${DB_NAME:-recycle}
-  #     DB_USER: ${DB_USER:-recycle}
-  #     DB_PASSWORD: ${DB_PASSWORD}
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-120}
-  #     UPLOAD_PATH: /app/uploads
-  #   volumes:
-  #     - uploads_data:/app/uploads
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   networks:
-  #     - recycle-net
+  backend:
+    build: ./backend
+    image: nuaa-recycle-backend:latest
+    container_name: nuaa-recycle-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-recycle}
+      DB_USER: ${DB_USER:-recycle}
+      DB_PASSWORD: ${DB_PASSWORD:?请在 .env 中设置 DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-120}
+      ADMIN_INIT_PASSWORD: ${ADMIN_INIT_PASSWORD:-}
+      UPLOAD_PATH: /app/uploads
+      TZ: Asia/Shanghai
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - recycle-net
+
+  # 用户端 + 管理端静态站点，反向代理 /api 与 /uploads
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web/Dockerfile
+    image: nuaa-recycle-web:latest
+    container_name: nuaa-recycle-web
+    restart: unless-stopped
+    ports:
+      # 只对外开放 80；HTTPS 由云厂商/Cloudflare 或宿主机证书终止
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - recycle-net
 
 volumes:
   mysql_data:

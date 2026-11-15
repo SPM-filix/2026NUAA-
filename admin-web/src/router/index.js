@@ -148,7 +148,8 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  // 生产环境管理端挂在 /admin/，由构建时的 base 决定；开发环境为 /
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior: () => ({ top: 0 })
 })
