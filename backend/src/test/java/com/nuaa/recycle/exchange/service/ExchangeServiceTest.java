@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,6 +122,29 @@ class ExchangeServiceTest {
                 () -> exchangeService.create(new ExchangeCreateRequest(10L, 1, "K3")));
 
         assertEquals(ErrorCode.STOCK_INSUFFICIENT.getCode(), exception.getErrorCode().getCode());
+    }
+
+    @Test
+    void rejectsWhenStockIsZero() {
+        stubTransaction();
+        when(productMapper.selectById(10L)).thenReturn(product(0, 60, "ON", 0));
+
+        BizException exception = assertThrows(BizException.class,
+                () -> exchangeService.create(new ExchangeCreateRequest(10L, 1, "K5")));
+
+        assertEquals(ErrorCode.STOCK_INSUFFICIENT.getCode(), exception.getErrorCode().getCode());
+        verify(userMapper, never()).deductPoints(any(), anyInt());
+    }
+
+    @Test
+    void rejectsWhenQuantityExceedsLimit() {
+        stubTransaction();
+        when(productMapper.selectById(10L)).thenReturn(product(10, 60, "ON", 0));
+
+        BizException exception = assertThrows(BizException.class,
+                () -> exchangeService.create(new ExchangeCreateRequest(10L, 6, "K6")));
+
+        assertEquals(ErrorCode.QUANTITY_INVALID.getCode(), exception.getErrorCode().getCode());
     }
 
     @Test

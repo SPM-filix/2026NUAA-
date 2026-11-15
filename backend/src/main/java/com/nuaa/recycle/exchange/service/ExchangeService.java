@@ -85,9 +85,12 @@ public class ExchangeService {
             throw new BizException(ErrorCode.PRODUCT_OFF_SHELF);
         }
         int quantity = request.quantity();
-        int maxQuantity = Math.min(product.getStock() == null ? 0 : product.getStock(), 5);
-        if (quantity < 1 || quantity > maxQuantity) {
+        if (quantity < 1 || quantity > 5) {
             throw new BizException(ErrorCode.QUANTITY_INVALID);
+        }
+        // 库存不足要和“数量非法”区分开：并发抢购中库存被抢先扣完时应返回 3002，而不是 3013
+        if (product.getStock() == null || product.getStock() < quantity) {
+            throw new BizException(ErrorCode.STOCK_INSUFFICIENT);
         }
         int cost = product.getPointsPrice() * quantity;
 
