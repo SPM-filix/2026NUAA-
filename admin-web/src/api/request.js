@@ -31,10 +31,12 @@ export class ApiError extends Error {
 }
 
 function toLogin() {
+  // 管理端生产环境挂在 /admin/，硬编码 /login 会跳到用户端登录页
+  const loginPath = `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/login`
   const { pathname, search, hash } = window.location
-  if (pathname === '/login') return
+  if (pathname === loginPath) return
   const redirect = encodeURIComponent(`${pathname}${search}${hash}`)
-  window.location.href = `/login?redirect=${redirect}`
+  window.location.href = `${loginPath}?redirect=${redirect}`
 }
 
 function normalizeError(body, silent) {
