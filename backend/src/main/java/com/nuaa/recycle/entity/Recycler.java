@@ -14,6 +14,7 @@ public class Recycler {
     private Long id;
     private String name;
     private String phone;
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String passwordHash;
     private String employeeNo;
     private Long siteId;

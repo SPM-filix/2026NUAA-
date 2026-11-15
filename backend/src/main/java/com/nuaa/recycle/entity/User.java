@@ -14,6 +14,7 @@ public class User {
     private Long id;
     private String userCode;
     private String phone;
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String passwordHash;
     private String nickname;
     private String avatarUrl;

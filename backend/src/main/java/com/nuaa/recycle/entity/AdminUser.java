@@ -13,6 +13,7 @@ public class AdminUser {
     @com.fasterxml.jackson.annotation.JsonProperty("adminId")
     private Long id;
     private String username;
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String passwordHash;
     private String status;
     private Integer tokenVersion;
