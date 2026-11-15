@@ -251,6 +251,11 @@ async function submit() {
     })
     result.value = data
     user.value.pointsBalance = data.balanceAfter
+    // 余额已更新，清空本次录入，避免“登记后余额预计”把本单积分重复累加
+    form.categoryId = null
+    form.weight = null
+    form.remark = ''
+    formRef.value?.clearValidate()
     successVisible.value = true
   } finally {
     submitting.value = false

@@ -101,7 +101,7 @@ async function submit() {
           <div class="list-meta">
             <span>库存 {{ product.stock }}</span>
             <span v-if="product.spec">{{ product.spec }}</span>
-            <span>已兑 {{ product.salesCount }} 件</span>
+            <span>已兑 {{ product.soldCount ?? product.salesCount ?? 0 }} 件</span>
           </div>
 
           <div v-if="product.description" style="margin-top: 14px">
