@@ -1,6 +1,8 @@
 # 构建上下文必须是仓库根目录：docker build -f deploy/web/Dockerfile .
+# 生产镜像必须关闭 Mock，否则前端会走本地 fake 数据，登录不经过后端
 FROM node:22-alpine AS user-build
 WORKDIR /app
+ENV VITE_USE_MOCK=false
 COPY user-web/package.json user-web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY user-web/ ./
@@ -8,6 +10,7 @@ RUN npm run build
 
 FROM node:22-alpine AS admin-build
 WORKDIR /app
+ENV VITE_USE_MOCK=false
 COPY admin-web/package.json admin-web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY admin-web/ ./
