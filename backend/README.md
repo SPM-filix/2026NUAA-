@@ -31,20 +31,20 @@
 - 业务模块层（`controller/`、`service/`、`entity/`、`mapper/`）
   - 商品 PRD-01～07、类别与规则 CAT-01～07、站点 SITE-01～04
   - 公告 ANN-01～07、文件上传 FIL-01（本地磁盘）
-  - 统计 STA-01～05（接口已接入，聚合逻辑仍为占位）
+  - 统计 STA-01～05（真实聚合 SQL，见 `mapper/ModuleStatsMapper`）
   - 账号管理 ACC-01～11、管理员申诉处理
 
 未完成/待完善：
 
-- 统计接口的真实聚合 SQL
 - 文件上传 OSS（当前本地磁盘 + `/uploads` 静态映射）
-- Docker/MySQL 运行时验证、Nginx 反代与部署
+- Docker Compose 方式运行（Docker Desktop 已装，WSL2 尚未启用）、Nginx 反代与部署
 
-验证结果：
+验证结果（2026-11-15）：
 
-- `mvn clean compile`、`mvn test`（28 个测试）、`mvn package` 均通过
-- 关闭 Flyway、不连接数据库时 Spring 上下文可正常启动（无 Bean/路由冲突）
-- MySQL 运行、Flyway 实际建表、接口冒烟仍未验证
+- `mvn clean compile`、`mvn test`（37 个测试）、`mvn package` 均通过
+- MySQL 8.0 实库启动，Flyway `V1`/`V2` 成功，14 张表（含 `flyway_schema_history`）
+- `tests/smoke/smoke-test.mjs` 35 项断言全部通过；`concurrency-test.mjs` 库存 1 时 20 并发无超卖、积分只扣一次
+- 关闭 Flyway、不连接数据库时 Spring 上下文也可启动（无 Bean/路由冲突）
 
 详细交接见 [docs/HANDOVER.md](docs/HANDOVER.md)。
 

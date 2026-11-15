@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。三端源码均已落地：后端通过编译、28 个单元测试和打包，MySQL 运行时尚未验证；用户端与管理端页面完整、默认可跑 Mock，但本机尚未安装依赖：
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。三端源码均已落地：后端通过编译、37 个单元测试和打包，MySQL 8.0 实库与主流程冒烟已验证；用户端与管理端页面完整，Mock 与真实后端两种模式均验证通过，本机已安装依赖：
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
@@ -25,9 +25,9 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTe
 JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
 ```
 
-已验证：`mvn clean compile`、`mvn test`（28 个测试）、`mvn package` 均通过；禁用 Flyway、不连接数据库时 Spring 上下文可正常启动。MySQL 未启动，运行应用前需安装 Docker 并执行 `docker compose up -d`。
+已验证：`mvn clean compile`、`mvn test`（37 个测试）、`mvn package` 均通过；MySQL 8.0 实库启动后 Flyway `V1`/`V2` 建表成功，`tests/smoke/` 冒烟 35 项与库存并发用例通过；禁用 Flyway、不连接数据库时 Spring 上下文也可正常启动。Docker Compose 路径因 WSL2 未启用暂未验证。
 
-前端构建（两端各自执行，本机尚未安装依赖）：
+前端构建（两端各自执行，依赖已安装）：
 
 ```bash
 cd user-web && npm install && npm run build
@@ -56,7 +56,7 @@ cd admin-web && npm install && npm run build
 - 响应封装：核心用 `common/api/ApiResponse`，模块层用 `common/R`，JSON 结构一致。
 - 模块层 Mapper 统一 `Module*` 前缀，避免与核心 Mapper 的 Bean 名冲突；新增 Mapper 必须保持唯一简单名。
 - 申诉有两套模型指向同一张 `appeal` 表：核心 `user/entity/Appeal` + `user/mapper/AppealMapper`（用户提交/查询），模块层 `entity/Appeal` + `ModuleAppealMapper`（管理员处理）；改表结构时两处都要同步。
-- 统计 `StatsService` 目前是占位聚合；OSS 上传仍待补。
+- 统计 `StatsService` 已接真实聚合（`mapper/ModuleStatsMapper`）；OSS 上传仍待补。
 
 ## 本地环境
 
@@ -66,7 +66,7 @@ cd admin-web && npm install && npm run build
 - 建表与初始化脚本放 `deploy/mysql/init/`，仅在数据卷首次创建时执行
 - 上传目录使用命名卷 `uploads_data`，后端通过 `UPLOAD_PATH` 指定，容器内建议 `/app/uploads`
 - 本机工具链（2026-11-12）：JDK 21.0.13（`JAVA_HOME` 已设置）、Maven 3.9.16（`MAVEN_HOME` 已设置）、Node 24.15.0 / npm 11.12.1
-- **Docker Desktop 未安装**，MySQL 容器未启动；安装前不要假设 `docker compose` 可用
+- **Docker Desktop 4.99.0 已安装，但本机 WSL2 未启用**（需管理员执行 `wsl --install` 并重启），`docker compose` 暂不可用；本地验证可改用已安装的 MySQL 8.0，`DB_HOST=127.0.0.1`
 - 已在运行的 Claude 会话可能仍继承旧的 Java 8 PATH；构建时显式使用 `JAVA_HOME`，或重启会话后再执行
 - 详细命令见 [deploy/README.md](deploy/README.md)
 

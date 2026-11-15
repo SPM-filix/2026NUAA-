@@ -70,7 +70,7 @@
 | 站点维护 | SITE-01～04 | 已集成 |
 | 公告与科普 | ANN-01～07 | 已集成 |
 | 文件上传 | FIL-01 | 已集成（本地磁盘，`/uploads` 静态映射） |
-| 统计看板 | STA-01～05 | 接口已集成，聚合逻辑为占位（返回 0/空） |
+| 统计看板 | STA-01～05 | 已实现真实聚合 SQL（`ModuleStatsMapper`） |
 | 账号管理 | ACC-01～11 | 已集成 |
 | 管理员申诉处理 | ACC-09/10 | 已集成 |
 
@@ -128,7 +128,7 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 
 ## 5. 测试现状
 
-已写单元测试（不依赖数据库），2026-11-15 全部通过（28 个）：
+已写单元测试（不依赖数据库），2026-11-15 全部通过（37 个）：
 
 - `PointsCalculatorTest`：四舍五入、最低 1 分、边界。
 - `RevokeWindowTest`：299/300/301 秒。
@@ -138,25 +138,37 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 - `DeliveryServiceTest`：手机号脱敏、非法关键字、用户不存在。
 - `AppealServiceTest`：本人流水可申诉、他人流水 1003、标的不存在 1005、列表回填 targetNo。
 - `UserServiceTest`：修改资料不动手机号/积分。
+- `StatsServiceTest`：总览聚合、分类占比、日期区间校验、趋势补零、TOP 昵称脱敏、工作台与排名。
+
+已在 MySQL 8.0 实库完成（2026-11-15）：
+
+- Flyway `V1`/`V2` 建表成功，14 张表（含 `flyway_schema_history`）。
+- `tests/smoke/smoke-test.mjs`：35 项断言全部通过（认证、投递、兑换幂等、核销、统计、越权）。
+- `tests/smoke/concurrency-test.mjs`：库存 1 时 20 并发，1 笔成功、14 笔 3002、5 笔 3001，库存归零未超卖，积分只扣一次。
+- 发现并修复缺陷 DEF-001：库存被并发扣完后错误返回 `3013`，已改为 `3002` 并补 2 个单元测试。
 
 未做/待做：
 
-- 集成测试与真实并发测试（按计划暂缓）。
-- MySQL/Flyway 启动验证（Docker 未安装）。
-- 阶段③并发用例：库存 1 时 20 并发、余额 100 兑换 60 分商品 10 并发、同一幂等键连发 5 次、并发撤销同一流水。
+- 5 分钟撤销窗口、管理员授权撤销、取消退分、申诉、上传的接口级用例。
+- 余额 100 兑换 60 分商品 10 并发、同一幂等键连发 5 次、并发撤销同一流水。
+- Docker Compose 方式启动（Docker Desktop 已安装，但本机 WSL2 未启用，需管理员安装并重启）。
 
 ## 6. 环境与启动
 
 - JDK 21.0.13、Maven 3.9.16 已安装；`JAVA_HOME` / `MAVEN_HOME` 已设置。
 - 当前 Claude 会话可能仍继承 Java 8 PATH，执行 Maven 时显式设置 `JAVA_HOME`。
 - 环境变量：`DB_HOST`（默认 `db`）、`DB_PORT`、`DB_NAME`、`DB_USER`、`DB_PASSWORD`、`JWT_SECRET`（≥32 字节）、`JWT_EXPIRE_MINUTES`、`ADMIN_INIT_PASSWORD`。
-- Docker Desktop 未安装，MySQL 未启动；安装后：
+- Docker Desktop 4.99.0 已安装，但本机 WSL2 未启用（`wsl --install` 需要管理员权限并重启），因此 Compose 路径未验证；验证时改用本机 MySQL 8.0.46 临时实例（端口 3307）。WSL2 就绪后：
 
 ```bash
 docker compose up -d
 cd backend
-JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn spring-boot:run
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTests package
+JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" \
+  java -jar target/recycle-backend-0.1.0-SNAPSHOT.jar
 ```
+
+本次验证使用打包后的 jar 启动；`mvn spring-boot:run` 在当前环境曾报找不到主类，未再使用。
 
 本地 IDE 运行需把 `DB_HOST` 改为 `127.0.0.1`（宿主机端口），容器内仍用 `db`。
 
@@ -165,7 +177,7 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn spring-b
 1. **幂等键永久唯一**：`uk_user_idem` 不会在 24 小时后释放，比契约的 24 小时更严格；同一 key 永不重复成交。若必须支持 24 小时后复用，需要增加清理任务或分离幂等表。
 2. **管理员重置密码已集成**：模块层 `AccountController` 设置 `must_change_password` 并递增 `token_version`，核心拦截器负责强制改密。
 3. **文件上传已集成**：模块层使用本地磁盘与 `/uploads` 静态映射；OSS 未实现。
-4. **统计接口为占位**：`StatsService` 目前返回 0/空列表，需补真实聚合 SQL。
+4. **统计接口已实现真实聚合**：`StatsService` + `ModuleStatsMapper` 覆盖 STA-01～05，统计口径见 `docs/reports/系统测试报告-阶段③.md`。
 5. **两套模型并存**：核心使用 `auth/catalog/delivery/exchange` 分包，模块层使用 `controller/service/entity/mapper`；新增功能时应沿用所属层，避免再建同名 Mapper。
 6. 未引入 Redis；并发控制依赖 MySQL 条件更新与乐观锁，符合当前规模。
 7. **兑换重试用当前读**：乐观锁冲突后用 `SELECT ... FOR UPDATE`（`ProductMapper.selectByIdForUpdate`）重读，避免 REPEATABLE READ 快照导致重试反复失败、误报 `3002`。
