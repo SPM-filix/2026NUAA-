@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 仓库现状
 
-这是 2026 年 NUAA 软件工程课程的开发大作业仓库。后端骨架与核心模块已通过编译、单元测试和打包，MySQL 运行时尚未验证；前端仍无源码：
+这是 2026 年 NUAA 软件工程课程的开发大作业仓库。三端源码均已落地：后端通过编译、28 个单元测试和打包，MySQL 运行时尚未验证；用户端与管理端页面完整、默认可跑 Mock，但本机尚未安装依赖：
 
 - [README.md](README.md) — 项目简介、四阶段流程、环境准备
 - [小组分工.md](小组分工.md) — 成员职责与阶段分工（分工的唯一来源）
 - [协作须知.md](协作须知.md) — 分支、commit、PR、评审与接口协作的团队约定
 - `backend/` — Spring Boot 3 后端，已集成认证/投递/兑换核心与商品/类别/站点/公告/上传/统计/账号模块；交接文档 [backend/docs/HANDOVER.md](backend/docs/HANDOVER.md)
-- `user-web/`、`admin-web/` — 前端源码目录，目前只有 README
+- `user-web/` — 用户端：Vue 3 + Vite 6 + Element Plus，18 个页面，`src/mock/` 默认开启并持久化到 localStorage
+- `admin-web/` — 管理端（管理员 + 回收员）：Vue 3 + Vite 7 + Element Plus + ECharts，22 个页面（12 管理 + 6 回收员 + 4 公共），`src/mock/` 内存适配器读取根目录 `mocks/`
 - `docs/` — 阶段①需求与设计、接口契约 [docs/api.md](docs/api.md)、阶段③④报告
 - `mocks/` — 阶段② Mock 数据
 - `tests/` — Postman 集合与系统测试用例
@@ -24,7 +25,16 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn -DskipTe
 JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
 ```
 
-已验证：`mvn clean compile`、`mvn test`（22 个测试）、`mvn package` 均通过；禁用 Flyway、不连接数据库时 Spring 上下文可正常启动。MySQL 未启动，运行应用前需安装 Docker 并执行 `docker compose up -d`。前端暂无构建命令。
+已验证：`mvn clean compile`、`mvn test`（28 个测试）、`mvn package` 均通过；禁用 Flyway、不连接数据库时 Spring 上下文可正常启动。MySQL 未启动，运行应用前需安装 Docker 并执行 `docker compose up -d`。
+
+前端构建（两端各自执行，本机尚未安装依赖）：
+
+```bash
+cd user-web && npm install && npm run build
+cd admin-web && npm install && npm run build
+```
+
+两端用 `VITE_USE_MOCK` 控制 Mock：改为 `false` 即走真实后端。基础路径变量不同——user-web 用 `VITE_API_BASE_URL`，admin-web 用 `VITE_API_BASE` 与 `VITE_PROXY_TARGET`（见各自 `.env.example`）。
 
 ## 技术选型（2026-11-12 确定）
 
@@ -45,7 +55,8 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn test
 
 - 响应封装：核心用 `common/api/ApiResponse`，模块层用 `common/R`，JSON 结构一致。
 - 模块层 Mapper 统一 `Module*` 前缀，避免与核心 Mapper 的 Bean 名冲突；新增 Mapper 必须保持唯一简单名。
-- 统计 `StatsService` 目前是占位聚合；用户申诉、用户资料修改、OSS 上传仍待补。
+- 申诉有两套模型指向同一张 `appeal` 表：核心 `user/entity/Appeal` + `user/mapper/AppealMapper`（用户提交/查询），模块层 `entity/Appeal` + `ModuleAppealMapper`（管理员处理）；改表结构时两处都要同步。
+- 统计 `StatsService` 目前是占位聚合；OSS 上传仍待补。
 
 ## 本地环境
 
