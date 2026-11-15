@@ -164,6 +164,7 @@ bash deploy/backup.sh       # 数据库备份，保留 7 天
 ## 文档索引
 
 - [docs/README.md](docs/README.md) — 需求、设计、报告索引
+- [docs/交接文档-魏鸿.md](docs/交接文档-魏鸿.md) — 阶段④交接（运维、报告、PPT）
 - [docs/api.md](docs/api.md) — 接口契约 v0.1
 - [backend/docs/HANDOVER.md](backend/docs/HANDOVER.md) — 后端核心交接
 - [deploy/README.md](deploy/README.md) — 部署手册
