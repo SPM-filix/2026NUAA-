@@ -17,8 +17,11 @@
 # 环境准备
 
 1. 安装开发工具链：JDK 21、Maven（后端），Node 20+（前端）。
-2. 安装 Docker Desktop（数据库；当前本机尚未安装）。
+2. 安装 Docker Desktop（本机已安装；Windows 还需**管理员执行 `wsl --install` 并重启**才能启动引擎）。
 3. 复制并填写环境变量：`cp .env.example .env`，至少设置 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`。
-4. 启动数据库：`docker compose up -d`。
+4. 启动整套服务：`docker compose up -d --build`（db + backend + web）。
+5. 本地不想用容器时，可用本机 MySQL 8.0 启动后端，`DB_HOST=127.0.0.1`。
 
-应用内连接数据库使用 compose 服务名 `db`，不要写 `localhost`；宿主机 GUI 调试才用 `127.0.0.1`。完整说明见 [deploy/README.md](deploy/README.md)。
+应用内连接数据库使用 compose 服务名 `db`，不要写 `localhost`；宿主机 GUI 调试才用 `127.0.0.1`。
+
+服务器部署步骤（含 Docker 安装、域名/HTTPS、备份与排障）见 [deploy/README.md](deploy/README.md)。

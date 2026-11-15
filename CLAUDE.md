@@ -60,7 +60,7 @@ cd admin-web && npm install && npm run build
 
 ## 本地环境
 
-- 根目录 [compose.yaml](compose.yaml) 提供 MySQL 8.0；后端、Nginx 服务待脚手架落地后加入
+- 根目录 [compose.yaml](compose.yaml) 提供 db + backend + web 三个服务；`deploy/web/Dockerfile` 把两个前端打进 nginx，管理端挂在 `/admin/`
 - 应用连接数据库统一使用 compose 服务名 `DB_HOST=db`，**禁止写 `localhost`**；宿主机 GUI 才用 `127.0.0.1:${MYSQL_HOST_PORT}`
 - 首次启动：`cp .env.example .env` 并填写 `MYSQL_ROOT_PASSWORD`、`DB_PASSWORD`、`JWT_SECRET`，然后 `docker compose up -d`
 - 建表与初始化脚本放 `deploy/mysql/init/`，仅在数据卷首次创建时执行
