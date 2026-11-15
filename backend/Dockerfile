@@ -1,10 +1,13 @@
+# syntax=docker/dockerfile:1.7
 # 多阶段构建：Maven 编译 -> JRE 运行
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build
+COPY docker-maven-settings.xml /build/settings.xml
 COPY pom.xml .
-RUN mvn -B -q dependency:go-offline
 COPY src ./src
-RUN mvn -B -q -DskipTests package
+# 使用阿里云镜像 + BuildKit 依赖缓存，重复构建不再重新下载
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B -q -s /build/settings.xml -DskipTests package
 
 FROM eclipse-temurin:21-jre
 
