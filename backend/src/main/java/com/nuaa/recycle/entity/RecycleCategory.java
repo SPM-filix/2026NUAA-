@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @TableName("recycle_category")
 public class RecycleCategory {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("categoryId")
     private Long id;
     private String name;
     private String code;

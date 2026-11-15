@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @TableName("recycler")
 public class Recycler {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("recyclerId")
     private Long id;
     private String name;
     private String phone;

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @TableName("appeal")
 public class Appeal {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("appealId")
     private Long id;
     private Long userId;
     private String targetType;

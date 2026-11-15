@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @TableName("points_log")
 public class PointsLog {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("logId")
     private Long id;
     private Long userId;
     private String type;

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @TableName("exchange_order")
 public class ExchangeOrder {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("orderId")
     private Long id;
     private String orderNo;
     private Long userId;

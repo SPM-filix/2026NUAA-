@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @TableName("points_rule")
 public class PointsRule {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("ruleId")
     private Long id;
     private Long categoryId;
     private Integer pointsPerKg;

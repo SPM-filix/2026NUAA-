@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @TableName("delivery_record")
 public class DeliveryRecord {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("recordId")
     private Long id;
     private String recordNo;
     private Long userId;

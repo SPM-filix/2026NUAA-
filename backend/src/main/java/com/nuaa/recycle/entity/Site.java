@@ -9,6 +9,7 @@ import lombok.Data;
 @TableName("site")
 public class Site {
     @TableId(type = IdType.AUTO)
+    @com.fasterxml.jackson.annotation.JsonProperty("siteId")
     private Long id;
     private String name;
     private String address;
