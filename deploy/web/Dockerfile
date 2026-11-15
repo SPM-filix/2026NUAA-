@@ -11,6 +11,8 @@ WORKDIR /app
 COPY admin-web/package.json admin-web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY admin-web/ ./
+# admin-web/src/mock/db.js 通过 ../../../mocks 引用仓库根目录种子数据
+COPY mocks /mocks
 # 管理端挂在 /admin/ 路径下，资源与路由 base 同步
 RUN npm run build -- --base=/admin/
 
