@@ -14,7 +14,7 @@
 | ③ | 系统测试报告 | [reports/系统测试报告-阶段③.md](reports/系统测试报告-阶段③.md) | 陈益苇（邓裕达整理） | 已完成（2026-11-15） |
 | ③ | 高并发测试报告 | [reports/高并发测试报告-阶段③.md](reports/高并发测试报告-阶段③.md) | 邓裕达 | 已完成（生产环境） |
 | ④ | 部署手册 | [../deploy/README.md](../deploy/README.md) | 陈益苇 | 已完成（Docker Compose 单机） |
-| ④ | 开发报告、答辩 PPT | [reports/](reports/) | 魏鸿 | 待编写 |
+| ④ | 开发报告 | [reports/](reports/) | 魏鸿 | 待编写 |
 
 ## 其他索引
 
