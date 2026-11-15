@@ -24,12 +24,15 @@
 | REC-01 | GET | `/api/recyclers/me` | RECYCLER | 已实现 |
 | ADM-01 | GET | `/api/admins/me` | ADMIN | 已实现 |
 | USER-01 | GET | `/api/users/me` | USER | 已实现 |
+| USER-02 | PUT | `/api/users/me` | USER | 已实现（仅昵称/头像/地址可改） |
 | USER-03 | GET | `/api/users/me/qrcode` | USER | 已实现（10 分钟 QR） |
 | USER-04 | GET | `/api/users/me/points` | USER | 已实现 |
 | USER-05 | GET | `/api/users/me/points/logs` | USER | 已实现 |
 | USER-06 | GET | `/api/users/me/deliveries` | USER | 已实现 |
 | USER-07 | GET | `/api/users/me/exchanges` | USER | 已实现 |
 | USER-08 | GET | `/api/users/me/exchanges/{orderId}` | USER | 已实现 |
+| USER-09 | POST | `/api/users/me/appeals` | USER | 已实现（校验标的归属） |
+| USER-10 | GET | `/api/users/me/appeals` | USER | 已实现 |
 | DLV-01 | POST | `/api/deliveries` | RECYCLER | 已实现（事务三写） |
 | DLV-02 | GET | `/api/users/lookup` | RECYCLER | 已实现（手机号/编号/二维码） |
 | DLV-03 | GET | `/api/recyclers/me/deliveries` | RECYCLER | 已实现（强制本人过滤） |
@@ -73,8 +76,6 @@
 
 仍需补：
 
-- USER-02 用户资料修改
-- USER-09/10 用户申诉
 - STA 真实聚合 SQL（总量、分类占比、趋势、TOP、工作台）
 - 文件上传 OSS
 - 部署与 Nginx
@@ -84,6 +85,7 @@
 - 模块层 Mapper 统一加 `Module` 前缀，避免与核心 Mapper 的 Bean 名冲突。
 - 模块层使用 `com.nuaa.recycle.common.R`/`PageResult`，核心使用 `ApiResponse`/`common.api.PageResult`，二者 JSON 结构一致。
 - `JwtInterceptor` 同时填充核心 `UserContext` 和模块层 `com.nuaa.recycle.common.UserContext`。
+- 申诉两侧各自持有一套模型：核心 `user/entity/Appeal` + `user/mapper/AppealMapper`（用户提交/查询），模块层 `entity/Appeal` + `ModuleAppealMapper`（管理员处理 ACC-09/10）；Bean 名不冲突，改表结构时两处都要同步。
 - 陈益苇原有的 `schema.sql`、`AuthController`、`HealthController`、`JwtUtil`、`AuthInterceptor`、`WebConfig`、`MyBatisPlusConfig`、`GlobalExceptionHandler` 已删除或合并，避免重复。
 
 ## 3. 代码结构
@@ -126,14 +128,16 @@ Flyway 位置：`backend/src/main/resources/db/migration/`
 
 ## 5. 测试现状
 
-已写单元测试（不依赖数据库），2026-11-15 全部通过（22 个）：
+已写单元测试（不依赖数据库），2026-11-15 全部通过（28 个）：
 
 - `PointsCalculatorTest`：四舍五入、最低 1 分、边界。
 - `RevokeWindowTest`：299/300/301 秒。
 - `JwtServiceTest`：签发、解析、QR 类型、非法 token、短密钥。
 - `CodeGeneratorTest`：用户编号、核销码、流水号/订单号格式。
-- `ExchangeServiceTest`：幂等已有订单、积分不足、库存不足、并发幂等冲突回查。
+- `ExchangeServiceTest`：幂等已有订单、积分不足（含差额文案）、库存不足、缺幂等键 3014、并发幂等冲突回查。
 - `DeliveryServiceTest`：手机号脱敏、非法关键字、用户不存在。
+- `AppealServiceTest`：本人流水可申诉、他人流水 1003、标的不存在 1005、列表回填 targetNo。
+- `UserServiceTest`：修改资料不动手机号/积分。
 
 未做/待做：
 
@@ -164,12 +168,17 @@ JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.13.9-hotspot" mvn spring-b
 4. **统计接口为占位**：`StatsService` 目前返回 0/空列表，需补真实聚合 SQL。
 5. **两套模型并存**：核心使用 `auth/catalog/delivery/exchange` 分包，模块层使用 `controller/service/entity/mapper`；新增功能时应沿用所属层，避免再建同名 Mapper。
 6. 未引入 Redis；并发控制依赖 MySQL 条件更新与乐观锁，符合当前规模。
+7. **兑换重试用当前读**：乐观锁冲突后用 `SELECT ... FOR UPDATE`（`ProductMapper.selectByIdForUpdate`）重读，避免 REPEATABLE READ 快照导致重试反复失败、误报 `3002`。
+8. **AUTH-01 响应已对齐契约**：注册返回 `{userId, userCode, token, tokenType, expiresIn, mustChangePassword}`。
+9. **EXC-01 错误码已对齐**：缺幂等键返回 `3014`（不再被参数校验吞成 `1001`），积分不足 message 带差额。
+10. **DLV-06 授权撤销**返回 `revokedBy` 为管理员用户名（原为固定字符串 `ADMIN`）。
 
 ## 8. 已知风险与 TODO
 
 - 已通过编译、单元测试、打包；已用“禁用 Flyway + 不连接数据库”验证 Spring 上下文可启动，未在 MySQL 上验证 Flyway 脚本与 SQL 方言；CHECK 约束需 MySQL 8.0.16+。
 - 运行时验证（注册/投递/兑换/核销）需先安装 Docker 并启动 MySQL。
-- `StatsService` 真实聚合、用户申诉、用户资料修改、OSS 上传仍待补。新增 Mapper 时注意不要与同名接口冲突（模块层已统一 `Module` 前缀）。
+- `StatsService` 真实聚合、OSS 上传仍待补。新增 Mapper 时注意不要与同名接口冲突（模块层已统一 `Module` 前缀）。
+- 用户申诉两侧模型（核心 `user/entity/Appeal` 与模块层 `entity/Appeal`）改表时需同步。
 - JWT 拦截器抛出的异常依赖 `@RestControllerAdvice` 处理；若实际运行中未被捕获，需要在 `preHandle` 内直接写响应或增加 `HandlerExceptionResolver`。
 - `ADMIN_INIT_PASSWORD` 尚未写入本地 `.env`，启动前需补充。
 - 阶段③必须补并发测试，单元测试无法证明 MySQL 行锁行为。

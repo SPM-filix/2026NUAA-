@@ -24,7 +24,7 @@
 已实现：
 
 - 核心（`auth/`、`user/`、`catalog/`、`delivery/`、`exchange/`）
-  - AUTH-01～07、REC-01、ADM-01、USER-01/03～08
+  - AUTH-01～07、REC-01、ADM-01、USER-01～10
   - DLV-01～07、EXC-01～07、健康检查
   - JWT + `token_version`、强制改密、RBAC、数据隔离
   - Flyway `V1__schema.sql` 建表 + `V2__seed.sql` 种子数据
@@ -36,14 +36,13 @@
 
 未完成/待完善：
 
-- USER-02 用户资料修改、USER-09/10 用户申诉
 - 统计接口的真实聚合 SQL
 - 文件上传 OSS（当前本地磁盘 + `/uploads` 静态映射）
 - Docker/MySQL 运行时验证、Nginx 反代与部署
 
 验证结果：
 
-- `mvn clean compile`、`mvn test`（22 个测试）、`mvn package` 均通过
+- `mvn clean compile`、`mvn test`（28 个测试）、`mvn package` 均通过
 - 关闭 Flyway、不连接数据库时 Spring 上下文可正常启动（无 Bean/路由冲突）
 - MySQL 运行、Flyway 实际建表、接口冒烟仍未验证
 

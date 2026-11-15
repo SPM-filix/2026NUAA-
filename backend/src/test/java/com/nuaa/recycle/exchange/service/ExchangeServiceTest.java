@@ -89,11 +89,21 @@ class ExchangeServiceTest {
         stubTransaction();
         when(productMapper.selectById(10L)).thenReturn(product(10, 60, "ON", 0));
         when(userMapper.deductPoints(1L, 60)).thenReturn(0);
+        when(userMapper.selectById(1L)).thenReturn(user(0));
 
         BizException exception = assertThrows(BizException.class,
                 () -> exchangeService.create(new ExchangeCreateRequest(10L, 1, "K2")));
 
         assertEquals(ErrorCode.POINTS_INSUFFICIENT.getCode(), exception.getErrorCode().getCode());
+        assertEquals("积分不足，还差 60 积分", exception.getMessage());
+    }
+
+    @Test
+    void rejectsWhenIdempotencyKeyMissing() {
+        BizException exception = assertThrows(BizException.class,
+                () -> exchangeService.create(new ExchangeCreateRequest(10L, 1, "  ")));
+
+        assertEquals(ErrorCode.IDEMPOTENCY_KEY_MISSING.getCode(), exception.getErrorCode().getCode());
     }
 
     @Test
@@ -101,10 +111,11 @@ class ExchangeServiceTest {
         stubTransaction();
         Product before = product(1, 60, "ON", 0);
         Product after = product(0, 60, "ON", 1);
-        when(productMapper.selectById(10L)).thenReturn(before, after);
+        when(productMapper.selectById(10L)).thenReturn(before);
         when(userMapper.deductPoints(1L, 60)).thenReturn(1);
         when(userMapper.selectById(1L)).thenReturn(user(40));
         when(productMapper.deductStock(10L, 1, 0)).thenReturn(0);
+        when(productMapper.selectByIdForUpdate(10L)).thenReturn(after);
 
         BizException exception = assertThrows(BizException.class,
                 () -> exchangeService.create(new ExchangeCreateRequest(10L, 1, "K3")));

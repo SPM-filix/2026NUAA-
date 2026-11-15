@@ -1,6 +1,7 @@
 package com.nuaa.recycle.delivery.service;
 
 import com.nuaa.recycle.auth.entity.User;
+import com.nuaa.recycle.auth.mapper.AdminUserMapper;
 import com.nuaa.recycle.auth.mapper.RecyclerMapper;
 import com.nuaa.recycle.auth.mapper.UserMapper;
 import com.nuaa.recycle.catalog.mapper.PointsRuleMapper;
@@ -31,6 +32,8 @@ class DeliveryServiceTest {
     private UserMapper userMapper;
     @Mock
     private RecyclerMapper recyclerMapper;
+    @Mock
+    private AdminUserMapper adminUserMapper;
     @Mock
     private RecycleCategoryMapper categoryMapper;
     @Mock

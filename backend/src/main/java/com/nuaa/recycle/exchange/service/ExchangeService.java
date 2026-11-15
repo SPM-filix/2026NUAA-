@@ -53,6 +53,9 @@ public class ExchangeService {
     private final TransactionTemplate transactionTemplate;
 
     public ExchangeOrderResponse create(ExchangeCreateRequest request) {
+        if (!StringUtils.hasText(request.idempotencyKey())) {
+            throw new BizException(ErrorCode.IDEMPOTENCY_KEY_MISSING);
+        }
         Long userId = UserContext.id();
         ExchangeOrder existing = exchangeOrderMapper.findByIdempotencyKey(userId, request.idempotencyKey());
         if (existing != null) {
@@ -89,7 +92,10 @@ public class ExchangeService {
         int cost = product.getPointsPrice() * quantity;
 
         if (userMapper.deductPoints(userId, cost) == 0) {
-            throw new BizException(ErrorCode.POINTS_INSUFFICIENT);
+            User current = userMapper.selectById(userId);
+            int balance = current == null || current.getPointsBalance() == null ? 0 : current.getPointsBalance();
+            int diff = Math.max(cost - balance, 0);
+            throw new BizException(ErrorCode.POINTS_INSUFFICIENT, "积分不足，还差 " + diff + " 积分");
         }
         User userAfterPoints = userMapper.selectById(userId);
 
@@ -100,7 +106,7 @@ public class ExchangeService {
                 deducted = true;
                 break;
             }
-            Product latest = productMapper.selectById(product.getId());
+            Product latest = productMapper.selectByIdForUpdate(product.getId());
             if (latest == null) {
                 throw new BizException(ErrorCode.NOT_FOUND, "商品不存在");
             }

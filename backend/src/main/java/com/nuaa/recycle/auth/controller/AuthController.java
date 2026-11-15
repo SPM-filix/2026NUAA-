@@ -7,6 +7,7 @@ import com.nuaa.recycle.auth.dto.LoginResponse;
 import com.nuaa.recycle.auth.dto.RecyclerRegisterRequest;
 import com.nuaa.recycle.auth.dto.RecyclerRegisterResponse;
 import com.nuaa.recycle.auth.dto.RegisterRequest;
+import com.nuaa.recycle.auth.dto.RegisterResponse;
 import com.nuaa.recycle.auth.service.AuthService;
 import com.nuaa.recycle.common.api.ApiResponse;
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/users/register")
-    public ApiResponse<LoginResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
+    public ApiResponse<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
         return ApiResponse.ok(authService.registerUser(request));
     }
 

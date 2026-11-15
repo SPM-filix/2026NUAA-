@@ -29,10 +29,13 @@ import com.nuaa.recycle.user.dto.QrCodeResponse;
 import com.nuaa.recycle.user.dto.UserDeliveryResponse;
 import com.nuaa.recycle.user.dto.UserExchangeResponse;
 import com.nuaa.recycle.user.dto.UserProfileResponse;
+import com.nuaa.recycle.user.dto.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,6 +62,24 @@ public class UserService {
                 user.getPointsBalance(), user.getStatus(), user.getCreatedAt());
     }
 
+    @Transactional
+    public UserProfileResponse updateProfile(UserUpdateRequest request) {
+        User user = requireUser();
+        // phone、pointsBalance、status、role 不在可修改范围内（api.md API-USER-02）
+        if (request.nickname() != null) {
+            user.setNickname(request.nickname());
+        }
+        if (request.avatarUrl() != null) {
+            user.setAvatarUrl(request.avatarUrl());
+        }
+        if (request.address() != null) {
+            user.setAddress(request.address());
+        }
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+        return profile();
+    }
+
     public QrCodeResponse qrCode() {
         User user = requireUser();
         String token = jwtService.generateQrToken(user.getId(), user.getTokenVersion());
@@ -74,11 +95,14 @@ public class UserService {
                 pointsLogMapper.sumRevoked(user.getId()));
     }
 
-    public PageResult<PointsLogResponse> pointsLogs(long page, long size, String type) {
+    public PageResult<PointsLogResponse> pointsLogs(long page, long size, String type,
+                                                    LocalDate from, LocalDate to) {
         User user = requireUser();
         LambdaQueryWrapper<PointsLog> wrapper = new LambdaQueryWrapper<PointsLog>()
                 .eq(PointsLog::getUserId, user.getId())
                 .eq(StringUtils.hasText(type), PointsLog::getType, type)
+                .ge(from != null, PointsLog::getCreatedAt, from == null ? null : from.atStartOfDay())
+                .lt(to != null, PointsLog::getCreatedAt, to == null ? null : to.plusDays(1).atStartOfDay())
                 .orderByDesc(PointsLog::getCreatedAt);
         Page<PointsLog> result = pointsLogMapper.selectPage(new Page<>(page, size), wrapper);
         List<PointsLogResponse> list = result.getRecords().stream()
@@ -89,11 +113,17 @@ public class UserService {
         return PageResult.of(result, list);
     }
 
-    public PageResult<UserDeliveryResponse> deliveries(long page, long size) {
+    public PageResult<UserDeliveryResponse> deliveries(long page, long size, Long categoryId,
+                                                       LocalDate from, LocalDate to) {
         User user = requireUser();
         Page<DeliveryRecord> result = deliveryRecordMapper.selectPage(new Page<>(page, size),
                 new LambdaQueryWrapper<DeliveryRecord>()
                         .eq(DeliveryRecord::getUserId, user.getId())
+                        .eq(categoryId != null, DeliveryRecord::getCategoryId, categoryId)
+                        .ge(from != null, DeliveryRecord::getCreatedAt,
+                                from == null ? null : from.atStartOfDay())
+                        .lt(to != null, DeliveryRecord::getCreatedAt,
+                                to == null ? null : to.plusDays(1).atStartOfDay())
                         .orderByDesc(DeliveryRecord::getCreatedAt));
         List<UserDeliveryResponse> list = result.getRecords().stream()
                 .map(this::toUserDelivery)

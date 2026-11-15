@@ -2,8 +2,10 @@ package com.nuaa.recycle.delivery.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.nuaa.recycle.auth.entity.AdminUser;
 import com.nuaa.recycle.auth.entity.Recycler;
 import com.nuaa.recycle.auth.entity.User;
+import com.nuaa.recycle.auth.mapper.AdminUserMapper;
 import com.nuaa.recycle.auth.mapper.RecyclerMapper;
 import com.nuaa.recycle.auth.mapper.UserMapper;
 import com.nuaa.recycle.catalog.entity.PointsRule;
@@ -48,6 +50,7 @@ public class DeliveryService {
 
     private final UserMapper userMapper;
     private final RecyclerMapper recyclerMapper;
+    private final AdminUserMapper adminUserMapper;
     private final RecycleCategoryMapper categoryMapper;
     private final PointsRuleMapper pointsRuleMapper;
     private final SiteMapper siteMapper;
@@ -209,8 +212,10 @@ public class DeliveryService {
         }
         User updated = userMapper.selectById(record.getUserId());
         writeRevokeLog(record, updated, deducted, "ADMIN", adminId, reason, LocalDateTime.now());
+        AdminUser admin = adminUserMapper.selectById(adminId);
         return new RevokeResponse(recordId, "REVOKED", record.getPoints(),
-                updated.getPointsBalance(), LocalDateTime.now(), deficit, "ADMIN");
+                updated.getPointsBalance(), LocalDateTime.now(), deficit,
+                admin == null ? null : admin.getUsername());
     }
 
     public DeliveryRecordResponse detail(Long recordId) {

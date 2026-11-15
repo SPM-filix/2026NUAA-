@@ -10,6 +10,7 @@ import com.nuaa.recycle.auth.dto.RecyclerMeResponse;
 import com.nuaa.recycle.auth.dto.RecyclerRegisterRequest;
 import com.nuaa.recycle.auth.dto.RecyclerRegisterResponse;
 import com.nuaa.recycle.auth.dto.RegisterRequest;
+import com.nuaa.recycle.auth.dto.RegisterResponse;
 import com.nuaa.recycle.auth.entity.AdminUser;
 import com.nuaa.recycle.auth.entity.Recycler;
 import com.nuaa.recycle.auth.entity.User;
@@ -43,7 +44,7 @@ public class AuthService {
     private final CodeGenerator codeGenerator;
 
     @Transactional
-    public LoginResponse registerUser(RegisterRequest request) {
+    public RegisterResponse registerUser(RegisterRequest request) {
         if (countUserByPhone(request.phone()) > 0) {
             throw new BizException(ErrorCode.PHONE_EXISTS);
         }
@@ -58,7 +59,9 @@ public class AuthService {
         user.setStatus("ACTIVE");
         user.setUserCode(nextUserCode());
         userMapper.insert(user);
-        return userLoginResponse(user);
+        String token = jwtService.generate(user.getId(), Role.USER, user.getTokenVersion());
+        return new RegisterResponse(user.getId(), user.getUserCode(), token, "Bearer",
+                jwtService.expiresInSeconds(), false);
     }
 
     public LoginResponse loginUser(LoginRequest request) {
