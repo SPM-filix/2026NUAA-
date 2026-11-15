@@ -19,6 +19,8 @@ const ok = (data) => ({ code: 0, message: 'ok', data })
 const MOCK_BASE = new Date('2026-11-13T14:30:00+08:00').getTime()
 const BOOT_AT = Date.now()
 const now = () => new Date(MOCK_BASE + (Date.now() - BOOT_AT))
+// 令牌与积分规则使用真实时间：规则生效时间来自页面日期选择器，与演示时钟不应混用
+const realNow = () => new Date()
 
 function iso(date = now()) {
   const shifted = new Date(date.getTime() + 8 * 3600 * 1000)
@@ -93,7 +95,36 @@ const findAdmin = (id) => db.admins.find((a) => a.adminId === Number(id))
 db.recyclers.forEach((r) => {
   if (!r.password) r.password = DEFAULT_RECYCLER_PASSWORD
   if (r.mustChangePassword === undefined) r.mustChangePassword = false
+  if (r.tokenVersion === undefined) r.tokenVersion = 0
 })
+db.admins.forEach((a) => {
+  if (!a.status) a.status = 'ACTIVE'
+  if (a.tokenVersion === undefined) a.tokenVersion = 0
+})
+db.users.forEach((u) => {
+  if (u.tokenVersion === undefined) u.tokenVersion = 0
+})
+
+/**
+ * 积分规则按生效时间惰性应用：
+ * 每次读取类别、登记投递或查看规则历史时，把已到生效时间的规则同步到类别当前系数。
+ * 这样未来生效的规则不会在设置时提前生效，但到达生效时间后的下一次请求会应用它。
+ */
+function applyDueRules() {
+  const current = Date.now()
+  db.categories.forEach((category) => {
+    const dueRule = db.rules
+      .filter(
+        (rule) =>
+          rule.categoryId === category.categoryId && new Date(rule.effectiveFrom).getTime() <= current
+      )
+      .sort((a, b) => new Date(b.effectiveFrom) - new Date(a.effectiveFrom))[0]
+    if (dueRule && dueRule.effectiveFrom !== category.ruleEffectiveFrom) {
+      category.pointsPerKg = dueRule.pointsPerKg
+      category.ruleEffectiveFrom = dueRule.effectiveFrom
+    }
+  })
+}
 
 /* ------------------------------------------------------------------
  * 视图组装
@@ -130,7 +161,8 @@ function recyclerView(recycler) {
     ...recycler,
     siteName: site?.name ?? recycler.siteName,
     password: undefined,
-    mustChangePassword: undefined
+    mustChangePassword: undefined,
+    tokenVersion: undefined
   }
 }
 
@@ -222,13 +254,43 @@ function route(method, path, handler, options = {}) {
   routes.push({ method, pattern, keys, handler, ...options })
 }
 
-function requireRole(auth, role) {
-  if (!auth) throw new MockError(1002, '登录已过期，请重新登录')
-  if (auth.role !== role) throw new MockError(1003, '当前角色无权访问该接口')
+function issueToken(role, accountId, account) {
+  return `mock.${role}.${accountId}.${account.tokenVersion || 0}.${Date.now() + 7200 * 1000}.${Math.random()
+    .toString(36)
+    .slice(2, 10)}`
 }
 
+function bumpTokenVersion(account) {
+  account.tokenVersion = (account.tokenVersion || 0) + 1
+}
+
+/**
+ * 校验令牌：格式、账号存在、token_version 一致、未过期、账号状态允许。
+ * 与 docs/api.md §1、§18 的令牌失效规则保持一致。
+ */
 function requireAuth(auth) {
   if (!auth) throw new MockError(1002, '登录已过期，请重新登录')
+  const account = auth.role === 'ADMIN' ? findAdmin(auth.id) : findRecycler(auth.id)
+  if (!account) throw new MockError(1002, '登录已过期，请重新登录')
+  // 状态优先于版本：账号被禁用时按契约返回 2002，而不是笼统的令牌失效
+  if (auth.role === 'ADMIN') {
+    if ((account.status || 'ACTIVE') !== 'ACTIVE') throw new MockError(2002, '账号已被禁用')
+  } else if (account.status !== 'APPROVED') {
+    throw new MockError(2002, '账号已被禁用或未通过审核')
+  }
+  if (auth.version !== (account.tokenVersion || 0)) {
+    throw new MockError(1002, '登录已过期，请重新登录')
+  }
+  if (!auth.expiresAt || auth.expiresAt <= Date.now()) {
+    throw new MockError(1002, '登录已过期，请重新登录')
+  }
+  return account
+}
+
+function requireRole(auth, role) {
+  const account = requireAuth(auth)
+  if (auth.role !== role) throw new MockError(1003, '当前角色无权访问该接口')
+  return account
 }
 
 /* ---------------------------- 认证 ---------------------------- */
@@ -237,8 +299,9 @@ route('POST', '/auth/admins/login', ({ body }) => {
   const password = body?.password
   const admin = db.admins.find((a) => a.username === username)
   if (!admin || admin.password !== password) throw new MockError(2001, '账号或密码错误')
+  if ((admin.status || 'ACTIVE') !== 'ACTIVE') throw new MockError(2002, '账号已被禁用')
   return ok({
-    token: `mock.ADMIN.${admin.adminId}.${Date.now()}`,
+    token: issueToken('ADMIN', admin.adminId, admin),
     tokenType: 'Bearer',
     expiresIn: 7200,
     mustChangePassword: Boolean(admin.mustChangePassword),
@@ -260,7 +323,7 @@ route('POST', '/auth/recyclers/login', ({ body }) => {
   if (recycler.status === 'DISABLED') throw new MockError(2002, '账号已被禁用，请联系管理员')
 
   return ok({
-    token: `mock.RECYCLER.${recycler.recyclerId}.${Date.now()}`,
+    token: issueToken('RECYCLER', recycler.recyclerId, recycler),
     tokenType: 'Bearer',
     expiresIn: 7200,
     mustChangePassword: Boolean(recycler.mustChangePassword),
@@ -275,22 +338,21 @@ route('POST', '/auth/recyclers/login', ({ body }) => {
 }, { public: true })
 
 route('POST', '/auth/logout', ({ auth }) => {
-  requireAuth(auth)
+  const account = requireAuth(auth)
+  bumpTokenVersion(account)
   return ok(null)
 })
 
 route('PUT', '/auth/password', ({ auth, body }) => {
-  requireAuth(auth)
+  const account = requireAuth(auth)
   const oldPassword = body?.oldPassword
   const newPassword = body?.newPassword
-  const account =
-    auth.role === 'ADMIN' ? findAdmin(auth.id) : auth.role === 'RECYCLER' ? findRecycler(auth.id) : null
-  if (!account) throw new MockError(1005, '账号不存在')
   if (account.password !== oldPassword) throw new MockError(2005, '原密码错误')
   validatePassword(newPassword)
   if (oldPassword === newPassword) throw new MockError(2006, '新密码不能与原密码相同')
   account.password = newPassword
   account.mustChangePassword = false
+  bumpTokenVersion(account)
   return ok(null)
 })
 
@@ -320,19 +382,23 @@ route('GET', '/recyclers/me', ({ auth }) => {
 route('GET', '/health', () => ok({ status: 'UP', time: iso(now()), version: 'mock-0.1.0' }), { public: true })
 
 /* ---------------------------- 公共只读 ---------------------------- */
-route('GET', '/categories', ({ query }) => {
+route('GET', '/categories', ({ auth, query }) => {
+  requireAuth(auth)
+  applyDueRules()
   let list = clone(db.categories)
   if (String(query.enabledOnly) === 'true') list = list.filter((c) => c.status === 'ENABLED')
   return ok(list.sort((a, b) => a.sort - b.sort))
 })
 
-route('GET', '/sites', ({ query }) => {
+route('GET', '/sites', ({ auth, query }) => {
+  requireAuth(auth)
   let list = clone(db.sites)
   if (String(query.enabledOnly) === 'true') list = list.filter((s) => s.status === 'ENABLED')
   return ok(list)
 })
 
-route('GET', '/products', ({ query }) => {
+route('GET', '/products', ({ auth, query }) => {
+  requireAuth(auth)
   let list = db.products.map(productView)
   const keyword = trim(query.keyword)
   if (keyword) list = list.filter((p) => p.name.includes(keyword))
@@ -346,13 +412,15 @@ route('GET', '/products', ({ query }) => {
   return ok(paginate(list, query, 10))
 })
 
-route('GET', '/products/:productId', ({ params }) => {
+route('GET', '/products/:productId', ({ auth, params }) => {
+  requireAuth(auth)
   const product = findProduct(params.productId)
   if (!product) throw new MockError(1005, '商品不存在')
   return ok(productView(product))
 })
 
-route('GET', '/announcements', ({ query }) => {
+route('GET', '/announcements', ({ auth, query }) => {
+  requireAuth(auth)
   let list = db.announcements
     .filter((a) => a.status === 'PUBLISHED')
     .map((a) => ({
@@ -367,7 +435,8 @@ route('GET', '/announcements', ({ query }) => {
   return ok(paginate(list, query, 10))
 })
 
-route('GET', '/announcements/:announcementId', ({ params }) => {
+route('GET', '/announcements/:announcementId', ({ auth, params }) => {
+  requireAuth(auth)
   const item = db.announcements.find((a) => a.announcementId === Number(params.announcementId))
   if (!item) throw new MockError(1005, '公告不存在')
   return ok(item)
@@ -399,6 +468,7 @@ route('GET', '/users/lookup', ({ auth, query }) => {
 
 route('POST', '/deliveries', ({ auth, body }) => {
   requireRole(auth, 'RECYCLER')
+  applyDueRules()
   const user = findUser(body?.userId)
   const category = findCategory(body?.categoryId)
   const weight = num(body?.weight)
@@ -1053,8 +1123,14 @@ route('PUT', '/admin/categories/:categoryId/rule', ({ auth, params, body }) => {
   if (!Number.isInteger(pointsPerKg) || pointsPerKg < 1 || pointsPerKg > 1000) {
     throw new MockError(1001, '每公斤积分需为 1–1000 的整数')
   }
-  const effectiveFrom = body?.effectiveFrom ? iso(new Date(body.effectiveFrom)) : iso(now())
-  if (new Date(effectiveFrom) < new Date(category.ruleEffectiveFrom)) {
+  // 规则按真实时间生效（页面日期选择器使用真实时间）
+  applyDueRules()
+  const parsedEffectiveFrom = body?.effectiveFrom ? new Date(body.effectiveFrom) : realNow()
+  if (Number.isNaN(parsedEffectiveFrom.getTime())) {
+    throw new MockError(1001, '生效时间格式不正确')
+  }
+  const effectiveFrom = iso(parsedEffectiveFrom)
+  if (parsedEffectiveFrom.getTime() < new Date(category.ruleEffectiveFrom).getTime()) {
     throw new MockError(1001, '生效时间不能早于当前规则的生效时间')
   }
   const rule = {
@@ -1063,13 +1139,10 @@ route('PUT', '/admin/categories/:categoryId/rule', ({ auth, params, body }) => {
     pointsPerKg,
     effectiveFrom,
     createdBy: findAdmin(auth.id)?.username ?? 'admin',
-    createdAt: iso(now())
+    createdAt: iso(realNow())
   }
   db.rules.push(rule)
-  if (new Date(effectiveFrom) <= now()) {
-    category.pointsPerKg = pointsPerKg
-    category.ruleEffectiveFrom = effectiveFrom
-  }
+  applyDueRules()
   return ok({
     ruleId: rule.ruleId,
     categoryId: category.categoryId,
@@ -1080,6 +1153,7 @@ route('PUT', '/admin/categories/:categoryId/rule', ({ auth, params, body }) => {
 
 route('GET', '/admin/categories/:categoryId/rules', ({ auth, params, query }) => {
   requireRole(auth, 'ADMIN')
+  applyDueRules()
   const category = findCategory(params.categoryId)
   if (!category) throw new MockError(1005, '类别不存在')
   const list = db.rules
@@ -1161,6 +1235,7 @@ route('PATCH', '/admin/accounts/users/:userId/status', ({ auth, params, body }) 
   }
   user.status = body.status
   user.disabledReason = body.status === 'DISABLED' ? reason : null
+  if (body.status === 'DISABLED') bumpTokenVersion(user)
   return ok({ userId: user.userId, status: user.status })
 })
 
@@ -1171,6 +1246,7 @@ route('POST', '/admin/accounts/users/:userId/password/reset', ({ auth, params })
   const tempPassword = randomPassword()
   user.password = tempPassword
   user.mustChangePassword = true
+  bumpTokenVersion(user)
   return ok({
     tempPassword,
     expireAt: iso(new Date(now().getTime() + 24 * 3600 * 1000))
@@ -1234,6 +1310,7 @@ route('PATCH', '/admin/accounts/recyclers/:recyclerId/status', ({ auth, params, 
   }
   recycler.status = body.status
   recycler.disabledReason = body.status === 'DISABLED' ? trim(body?.reason) || null : null
+  if (body.status === 'DISABLED') bumpTokenVersion(recycler)
   return ok({ recyclerId: recycler.recyclerId, status: recycler.status })
 })
 
@@ -1244,6 +1321,7 @@ route('POST', '/admin/accounts/recyclers/:recyclerId/password/reset', ({ auth, p
   const tempPassword = randomPassword()
   recycler.password = tempPassword
   recycler.mustChangePassword = true
+  bumpTokenVersion(recycler)
   return ok({
     tempPassword,
     expireAt: iso(new Date(now().getTime() + 24 * 3600 * 1000))
@@ -1389,7 +1467,8 @@ function readAsDataURL(file) {
   })
 }
 
-route('POST', '/files', async ({ body }) => {
+route('POST', '/files', async ({ auth, body }) => {
+  requireAuth(auth)
   const file = body?.get?.('file')
   const scene = body?.get?.('scene') || 'PRODUCT'
   if (!file) throw new MockError(1001, '请选择要上传的文件')
@@ -1414,10 +1493,16 @@ route('POST', '/files', async ({ body }) => {
  * ------------------------------------------------------------------ */
 function parseAuth(headers = {}) {
   const raw = headers.Authorization || headers.authorization || ''
-  const token = String(raw).replace(/^Bearer\s+/i, '')
-  const match = /^mock\.(ADMIN|RECYCLER)\.(\d+)\./.exec(token)
+  const token = String(raw).replace(/^Bearer\s+/i, '').trim()
+  const match = /^mock\.(ADMIN|RECYCLER)\.(\d+)\.(\d+)\.(\d+)\./.exec(token)
   if (!match) return null
-  return { role: match[1], id: Number(match[2]), token }
+  return {
+    role: match[1],
+    id: Number(match[2]),
+    version: Number(match[3]),
+    expiresAt: Number(match[4]),
+    token
+  }
 }
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
